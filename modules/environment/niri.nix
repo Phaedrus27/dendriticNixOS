@@ -45,8 +45,8 @@
 
 					"Mod+Shift+H".move-column-left = null;
 					"Mod+Shift+L".move-column-right = null;
-					"Mod+Shift+K".move-column-up = null;
-					"Mod+Shift+J".move-column-down = null;
+					"Mod+Shift+K".move-window-up = null;
+					"Mod+Shift+J".move-window-down = null;
 
 					"Mod+1".focus-workspace = "w0";
           "Mod+2".focus-workspace = "w1";
