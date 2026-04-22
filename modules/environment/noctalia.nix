@@ -8,9 +8,5 @@
         (builtins.fromJSON
           (builtins.readFile ./noctalia.json)).settings;
     };
-    
-    environment.systemPackages = with pkgs [
-      pywalfox-native
-    ];
   };
 }
