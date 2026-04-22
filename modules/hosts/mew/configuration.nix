@@ -46,6 +46,10 @@
     # Configure console keymap
     console.keyMap = "fr";
 
+    # Enable feature for Noctalia
+    services.tuned.enable
+    services.upower.enable
+
     # Enable CUPS to print documents.
     services.printing.enable = true;
 
@@ -89,7 +93,10 @@
     environment.systemPackages = with pkgs; [
     #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     #  wget
-  git
+    git
+    vscodium
+    vesktop
+    vlc
     ];
 
     # Some programs need SUID wrappers, can be configured further or are
