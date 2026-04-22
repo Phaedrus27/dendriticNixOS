@@ -4,6 +4,7 @@
     imports =
       [ # Include the results of the hardware scan.
         self.nixosModules.mewHardware
+        self.nixosModules.niri
       ];
 
     # Bootloader.
