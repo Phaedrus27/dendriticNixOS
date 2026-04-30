@@ -2,7 +2,7 @@
   "settings": {
     "settingsVersion": 59,
     "bar": {
-      "barType": "simple",
+      "barType": "floating",
       "position": "top",
       "monitors": [],
       "density": "default",
@@ -28,16 +28,6 @@
       "showOnWorkspaceSwitch": true,
       "widgets": {
         "left": [
-          {
-            "colorizeSystemIcon": "none",
-            "colorizeSystemText": "none",
-            "customIconPath": "",
-            "enableColorization": false,
-            "icon": "rocket",
-            "iconColor": "none",
-            "id": "Launcher",
-            "useDistroLogo": false
-          },
           {
             "clockColor": "none",
             "customFont": "",
@@ -68,33 +58,6 @@
             "textColor": "none",
             "useMonospaceFont": true,
             "usePadding": false
-          },
-          {
-            "colorizeIcons": false,
-            "hideMode": "hidden",
-            "id": "ActiveWindow",
-            "maxWidth": 145,
-            "scrollingMode": "hover",
-            "showIcon": true,
-            "showText": true,
-            "textColor": "none",
-            "useFixedWidth": false
-          },
-          {
-            "compactMode": false,
-            "hideMode": "hidden",
-            "hideWhenIdle": false,
-            "id": "MediaMini",
-            "maxWidth": 145,
-            "panelShowAlbumArt": true,
-            "scrollingMode": "hover",
-            "showAlbumArt": true,
-            "showArtistFirst": true,
-            "showProgressRing": true,
-            "showVisualizer": false,
-            "textColor": "none",
-            "useFixedWidth": false,
-            "visualizerType": "linear"
           }
         ],
         "center": [
@@ -187,8 +150,8 @@
     "general": {
       "avatarImage": "/home/phaedrus/.face",
       "dimmerOpacity": 0.2,
-      "showScreenCorners": false,
-      "forceBlackScreenCorners": false,
+      "showScreenCorners": true,
+      "forceBlackScreenCorners": true,
       "scaleRatio": 1,
       "radiusRatio": 1,
       "iRadiusRatio": 1,
@@ -216,10 +179,10 @@
       "autoStartAuth": false,
       "allowPasswordWithFprintd": false,
       "clockStyle": "custom",
-      "clockFormat": "hh\\nmm",
+      "clockFormat": "hh\\nmmdd.MM.yyyy ",
       "passwordChars": false,
       "lockScreenMonitors": [],
-      "lockScreenBlur": 0,
+      "lockScreenBlur": 0.5,
       "lockScreenTint": 0,
       "keybinds": {
         "keyUp": [
@@ -258,8 +221,8 @@
       "boxBorderEnabled": false,
       "panelBackgroundOpacity": 0.93,
       "translucentWidgets": false,
-      "panelsAttachedToBar": true,
-      "settingsPanelMode": "attached",
+      "panelsAttachedToBar": false,
+      "settingsPanelMode": "centered",
       "settingsPanelSideBarCardStyle": false
     },
     "location": {
@@ -296,7 +259,7 @@
     },
     "wallpaper": {
       "enabled": true,
-      "overviewEnabled": false,
+      "overviewEnabled": true,
       "directory": "/home/phaedrus/Pictures/Wallpapers",
       "monitorDirectories": [],
       "enableMultiMonitorDirectories": false,
@@ -380,10 +343,10 @@
             "id": "Bluetooth"
           },
           {
-            "id": "WallpaperSelector"
+            "id": "NoctaliaPerformance"
           },
           {
-            "id": "NoctaliaPerformance"
+            "id": "AirplaneMode"
           }
         ],
         "right": [
@@ -625,7 +588,7 @@
       "backlightDeviceMappings": []
     },
     "colorSchemes": {
-      "useWallpaperColors": false,
+      "useWallpaperColors": true,
       "predefinedScheme": "Noctalia (default)",
       "darkMode": true,
       "schedulingMode": "off",
@@ -652,6 +615,14 @@
         {
           "enabled": true,
           "id": "niri"
+        },
+        {
+          "enabled": true,
+          "id": "kitty"
+        },
+        {
+          "enabled": true,
+          "id": "gtk"
         }
       ],
       "enableUserTheming": false
@@ -682,7 +653,7 @@
       "notifyUpdates": true
     },
     "idle": {
-      "enabled": false,
+      "enabled": true,
       "screenOffTimeout": 600,
       "lockTimeout": 660,
       "suspendTimeout": 1800,
@@ -700,7 +671,12 @@
       "overviewEnabled": false,
       "gridSnap": false,
       "gridSnapScale": false,
-      "monitorWidgets": []
+      "monitorWidgets": [
+        {
+          "name": "eDP-1",
+          "widgets": []
+        }
+      ]
     }
   },
   "state": {
@@ -710,7 +686,7 @@
     "openedPanel": "",
     "lockScreenActive": false,
     "wallpapers": {
-      "eDP-1": "/home/phaedrus/Pictures/Wallpapers/screenshot-191hq_final_33548012168_o.jpg"
+      "eDP-1": "/home/phaedrus/Pictures/Wallpapers/screenshot-286hq_final_33547979768_o.jpg"
     },
     "desktopWidgetsEditMode": false,
     "display": {
@@ -731,10 +707,10 @@
       }
     },
     "notificationsState": {
-      "lastSeenTs": 1776882617000
+      "lastSeenTs": 1777236660000
     },
     "changelogState": {
-      "lastSeenVersion": ""
+      "lastSeenVersion": "v4.7.6"
     },
     "colorSchemesList": {
       "schemes": [],

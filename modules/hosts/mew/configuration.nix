@@ -47,8 +47,8 @@
     console.keyMap = "fr";
 
     # Enable feature for Noctalia
-    services.tuned.enable
-    services.upower.enable
+    services.tuned.enable = true;
+    services.upower.enable = true;
 
     # Enable CUPS to print documents.
     services.printing.enable = true;
@@ -98,6 +98,7 @@
     vesktop
     vlc
     pywalfox-native
+    obsidian
     ];
 
     # Some programs need SUID wrappers, can be configured further or are
