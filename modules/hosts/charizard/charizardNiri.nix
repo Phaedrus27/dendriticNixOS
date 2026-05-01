@@ -29,18 +29,10 @@
 					};
 				};
 
-				output = [
-					{
-						name = "HDMI-A-1";
-						layout = {
-							rows = 2;
-							columns = 1;
-							preset-column-widths = {
-								proportion = 0.5;
-							};
-						};
-					}
-				];
+				outputs = {
+					name = "HDMI-A-1";
+						rows = 2;
+				};
 
 				window-rules = [
 					{
@@ -59,7 +51,6 @@
 
 				binds = { 
 					"Mod+Return".spawn-sh = lib.getExe pkgs.kitty;
-					"Mod+Return".hotkey-overlay.title = "Kitty";
 
 					"Mod+Q".close-window = {};
 					"Mod+F".maximize-column = {};
@@ -75,13 +66,17 @@
     				"Mod+Down".focus-workspace-down = {};
     				"Mod+Up".focus-workspace-up = {};
 
+					"Mod+Minus".set-column-width = "-10%";
+                  	"Mod+Plus".set-column-width = "+10%";
+                  	"Mod+Shift+Minus".set-window-height = "-10%";
+                  	"Mod+Shift+Plus".set-window-height = "+10%";
+
     				"Mod+Shift+Left".move-column-left = {};
     				"Mod+Shift+Right".move-column-right = {};
     				"Mod+Shift+Down".move-column-to-workspace-down = {};
     				"Mod+Shift+Up".move-column-to-workspace-up = {};
 
 					"Mod+Space".spawn-sh = "${lib.getExe self'.packages.myNoctalia} ipc call launcher toggle";
-					"Mod+Space".hotkey-overlay.title = "Launcher";
 				};
 
 
