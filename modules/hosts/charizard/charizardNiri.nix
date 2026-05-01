@@ -79,8 +79,8 @@
 					focus-ring.off = {};
 					gaps = 16;
 					struts = {
-						top = 64;
-						bottom = 64;
+						top = 32;
+						bottom = 32;
 						left = 4;
 						right = 4;
 					};

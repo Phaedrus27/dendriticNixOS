@@ -4,7 +4,9 @@
     "bar": {
       "barType": "floating",
       "position": "top",
-      "monitors": [],
+      "monitors": [
+        "DP-1"
+      ],
       "density": "default",
       "showOutline": false,
       "showCapsule": true,
@@ -283,7 +285,7 @@
         "pixelate",
         "honeycomb"
       ],
-      "skipStartupTransition": false,
+      "skipStartupTransition": true,
       "transitionEdgeSmoothness": 0.05,
       "panelPosition": "follow_bar",
       "hideWallpaperFilenames": false,
@@ -464,7 +466,7 @@
       "countdownDuration": 10000,
       "position": "center",
       "showHeader": true,
-      "showKeybinds": true,
+      "showKeybinds": false,
       "largeButtonsStyle": true,
       "largeButtonsLayout": "single-row",
       "powerOptions": [
@@ -623,6 +625,14 @@
         {
           "enabled": true,
           "id": "gtk"
+        },
+        {
+          "enabled": true,
+          "id": "steam"
+        },
+        {
+          "enabled": true,
+          "id": "code"
         }
       ],
       "enableUserTheming": false
@@ -686,28 +696,44 @@
     "openedPanel": "",
     "lockScreenActive": false,
     "wallpapers": {
-      "eDP-1": "/home/phaedrus/Pictures/Wallpapers/screenshot-286hq_final_33547979768_o.jpg"
+      "DP-1": "/home/phaedrus/Downloads/screenshot-255hq_final_47423900881_o.jpg",
+      "HDMI-A-1": "/home/phaedrus/Downloads/screenshot-255hq_final_47423900881_o.jpg"
     },
     "desktopWidgetsEditMode": false,
     "display": {
-      "eDP-1": {
-        "name": "eDP-1",
+      "DP-1": {
+        "name": "DP-1",
         "connected": true,
-        "scale": 1.5,
-        "width": 1504,
-        "height": 1002,
+        "scale": 1,
+        "width": 2560,
+        "height": 1440,
         "x": 0,
         "y": 0,
-        "physical_width": 280,
-        "physical_height": 190,
-        "refresh_rate": 59999,
+        "physical_width": 600,
+        "physical_height": 340,
+        "refresh_rate": 59951,
+        "vrr_supported": true,
+        "vrr_enabled": false,
+        "transform": "Normal"
+      },
+      "HDMI-A-1": {
+        "name": "HDMI-A-1",
+        "connected": true,
+        "scale": 1.25,
+        "width": 2048,
+        "height": 2304,
+        "x": 2560,
+        "y": 0,
+        "physical_width": 470,
+        "physical_height": 520,
+        "refresh_rate": 59967,
         "vrr_supported": false,
         "vrr_enabled": false,
         "transform": "Normal"
       }
     },
     "notificationsState": {
-      "lastSeenTs": 1777236660000
+      "lastSeenTs": 1777650075000
     },
     "changelogState": {
       "lastSeenVersion": "v4.7.6"
