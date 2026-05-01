@@ -37,6 +37,25 @@
 					}
 				];
 
+				outputs = {
+					"DP-1" = {
+						mode = {
+							width = 2560;
+							height = 1440;
+						};
+						position = { x = 0; y = 0; };
+      			scale = 1.0;
+
+						"HDMI-A-1" = {
+      				mode = {
+        				width = 2560;
+        				height = 1880;
+     					};
+      				position = { x = 2560; y = 0; };
+      				scale = 1.0;
+						};
+					};
+
 				gestures = [
 					{
 						hot-corners.off = {};
