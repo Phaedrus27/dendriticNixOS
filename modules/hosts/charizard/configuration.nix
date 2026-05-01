@@ -2,7 +2,7 @@
 
   flake.nixosModules.charizardConfiguration = { pkgs, lib, ... }: {
   	imports = [
-      self.nixosModules.niri
+      self.nixosModules.charizardNiri
       self.nixosModules.gaming
   		self.nixosModules.charizardHardware
     ];
@@ -42,6 +42,8 @@
       layout = "fr";
       variant = "afnor";
     };
+
+    services.libinput.enable = true;
 
     # Configure console keymap
     console.keyMap = "fr";
