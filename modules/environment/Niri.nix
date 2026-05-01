@@ -1,5 +1,5 @@
 { self, inputs, ... }: {
-	flake.nixosModules.charizardNiri = { pkgs, lib, ... }: {
+	flake.nixosModules.Niri = { pkgs, lib, ... }: {
 		programs.niri = {
 			enable = true;
 			package = self.packages.${pkgs.stdenv.hostPlatform.system}.myNiri;
@@ -57,19 +57,19 @@
 					"Mod+WheelScrollLeft".focus-column-left = {};
 
 					"Mod+Left".focus-column-left = {};
-   				"Mod+Right".focus-column-right = {};
-    			"Mod+Down".focus-workspace-down = {};
-    			"Mod+Up".focus-workspace-up = {};
+   					"Mod+Right".focus-column-right = {};
+    				"Mod+Down".focus-workspace-down = {};
+    				"Mod+Up".focus-workspace-up = {};
 
 					"Mod+Minus".set-column-width = "-10%";
-          "Mod+Plus".set-column-width = "+10%";
-          "Mod+Shift+Minus".set-window-height = "-10%";
-          "Mod+Shift+Plus".set-window-height = "+10%";
+                  	"Mod+Plus".set-column-width = "+10%";
+                  	"Mod+Shift+Minus".set-window-height = "-10%";
+                  	"Mod+Shift+Plus".set-window-height = "+10%";
 
-    			"Mod+Shift+Left".move-column-left = {};
-    			"Mod+Shift+Right".move-column-right = {};
-    			"Mod+Shift+Down".move-column-to-workspace-down = {};
-    			"Mod+Shift+Up".move-column-to-workspace-up = {};
+    				"Mod+Shift+Left".move-column-left = {};
+    				"Mod+Shift+Right".move-column-right = {};
+    				"Mod+Shift+Down".move-column-to-workspace-down = {};
+    				"Mod+Shift+Up".move-column-to-workspace-up = {};
 
 					"Mod+Space".spawn-sh = "${lib.getExe self'.packages.myNoctalia} ipc call launcher toggle";
 				};
