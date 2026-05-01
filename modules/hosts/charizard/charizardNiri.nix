@@ -29,8 +29,9 @@
 					};
 				};
 
-				output "HDMI-A-1" = [
+				output = [
 					{
+						name = "HDMI-A-1";
 						layout = {
 							rows = 2;
 							columns = 1;
@@ -58,13 +59,15 @@
 
 				binds = { 
 					"Mod+Return".spawn-sh = lib.getExe pkgs.kitty;
-					"Mod+Return".hotkey-overlay-title = "Kitty";
+					"Mod+Return".hotkey-overlay.title = "Kitty";
 
 					"Mod+Q".close-window = {};
 					"Mod+F".maximize-column = {};
 					"Mod+G".fullscreen-window = {};
 
-					"Mod+WheelScrollRight".focus-column.right = {};
+					"Mod+Tab".toggle-overview = {};
+
+					"Mod+WheelScrollRight".focus-column-right = {};
 					"Mod+WheelScrollLeft".focus-column-left = {};
 
 					"Mod+Left".focus-column-left = {};
@@ -78,7 +81,7 @@
     				"Mod+Shift+Up".move-column-to-workspace-up = {};
 
 					"Mod+Space".spawn-sh = "${lib.getExe self'.packages.myNoctalia} ipc call launcher toggle";
-					"Mod+Space".hotkey-overlay-title = "Launcher";
+					"Mod+Space".hotkey-overlay.title = "Launcher";
 				};
 
 
