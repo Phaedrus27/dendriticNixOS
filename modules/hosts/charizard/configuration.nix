@@ -1,12 +1,11 @@
 { self, inputs, ... }: {
 
-  flake.nixosModules.mewConfiguration = { pkgs, lib, ... }: {
-    imports =
-      [ # Include the results of the hardware scan.
-        self.nixosModules.charizardHardware
-        self.nixosModules.niri
-        self.nixosModules.gaming
-      ];
+  flake.nixosModules.charizardConfiguration = { pkgs, lib, ... }: {
+  	imports = [
+      self.nixosModules.niri
+      self.nixosModules.gaming
+  		self.nixosModules.charizardHardware
+    ];
 
     # Bootloader.
     boot.loader.systemd-boot.enable = true;
@@ -128,8 +127,7 @@
     # Before changing this value read the documentation for this option
     # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
     system.stateVersion = "25.11"; # Did you read the comment?
-
-  };
+	};
 }
 
   
