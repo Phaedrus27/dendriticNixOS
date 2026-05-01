@@ -28,12 +28,7 @@
 						tap = {};
 					};
 				};
-
-				outputs = {
-					name = "HDMI-A-1";
-						rows = 2;
-				};
-
+				
 				window-rules = [
 					{
 						geometry-corner-radius = 20;
@@ -82,10 +77,10 @@
 
 				layout = {
 					focus-ring.off = {};
-					gaps = 4;
+					gaps = 16;
 					struts = {
-						top = 4;
-						bottom = 4;
+						top = 64;
+						bottom = 64;
 						left = 4;
 						right = 4;
 					};
@@ -98,4 +93,5 @@
 		};
 	};
 }
+
 
