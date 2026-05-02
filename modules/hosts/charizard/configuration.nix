@@ -5,7 +5,7 @@
       self.nixosModules.Niri
       self.nixosModules.gaming
   		self.nixosModules.charizardHardware
-      self.nixosModules.plymouth
+      self.nixosModules.yubikey
     ];
 
     # Bootloader.
@@ -42,15 +42,6 @@
     services.xserver.xkb = {
       layout = "fr";
       variant = "afnor";
-    };
-
-    # Run PC/SC daemon
-    services.pcscd.enable = true;
-
-    # Run gpg agent and pinentry
-    programs.gnupg.agent = {
-      enable = true;
-      pinentryPackage = pkgs.pinentry-gtk2;
     };
 
     services.libinput.enable = true;
