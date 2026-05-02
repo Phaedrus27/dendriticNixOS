@@ -4,7 +4,8 @@
     services.tailscale = {
       enable = true;
       useRoutingFeatures = "server";
-      authKeyFile = config.sops.secrets.tailscale_authkey.path;
+      authKeyFile = lib.mkIf (config.sops.secrets ? tailscale_authkey) 
+        config.sops.secrets.tailscale_authkey.path;
     };
 
     networking.firewall = {
