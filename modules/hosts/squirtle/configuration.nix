@@ -4,6 +4,7 @@
     imports = [
     self.nixosModules.squirtleHardware
     self.nixosModules.squirtleStorage
+    self.nixosModules.tailscale
   ];
 
   boot.loader.systemd-boot.enable = true;
