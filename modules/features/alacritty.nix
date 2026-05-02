@@ -1,6 +1,6 @@
 { self, inputs, ... }: {
   perSystem = { pkgs, ... }: {
-    packages.myAlacritty = inputs.wrapper-modules.wrappedModules.alacritty.wrap {
+    packages.myAlacritty = inputs.wrapper-modules.wrappers.alacritty.wrap {
       inherit pkgs;
       settings = {
         window = {
