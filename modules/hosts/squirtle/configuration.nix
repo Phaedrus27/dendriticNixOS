@@ -24,6 +24,9 @@
     password = "changeme";
   };
 
+  environment.systemPackages = with pkgs; [
+    git
+    ];
   security.sudo.wheelNeedsPassword = false;
 
   system.stateVersion = "25.11";
