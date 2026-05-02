@@ -11,6 +11,8 @@
   networking.hostName = "squirtle";
   networking.networkmanager.enable = true;
 
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
   services.openssh = {
     enable = true;
     settings.PasswordAuthentication = true;
