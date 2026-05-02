@@ -1,10 +1,11 @@
 { self, inputs, ... }: {
   flake.nixosModules.protonvpn = { config, lib, pkgs, ... }: {
 
-    sops.secrets.protonvpn_wireguard = {
-      format = "yaml";
-    };
-
+    sops.secrets.protonvpn_privkey = {};
+    sops.secrets.protonvpn_pubkey = {};
+    sops.secrets.protonvpn_endpoint = {};
+    sops.secrets.protonvpn_address = {};
+    
     # Create the VPN network namespace
     systemd.services.netns-vpn = {
       description = "VPN network namespace";
