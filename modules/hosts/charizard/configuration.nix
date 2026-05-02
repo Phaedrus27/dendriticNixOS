@@ -44,6 +44,15 @@
       variant = "afnor";
     };
 
+    # Run PC/SC daemon
+    services.pcscd.enable = true;
+
+    # Run gpg agent and pinentry
+    programs.gnupg.agent = {
+      enable = true;
+      pinentryPackage = pkgs.pinentry-gtk2;
+    };
+
     services.libinput.enable = true;
 
     # Configure console keymap
