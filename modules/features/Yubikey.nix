@@ -7,7 +7,7 @@
     # GPG agent with pinentry for YubiKey PIN prompts
     programs.gnupg.agent = {
       enable = true;
-      enable SSHSupport = true;
+      enableSSHSupport = true;
       pinentryPackage = pkgs.pinentry-gtk2;
     };
 
