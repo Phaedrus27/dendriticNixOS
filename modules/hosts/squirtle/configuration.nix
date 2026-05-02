@@ -3,6 +3,7 @@
   flake.nixosModules.squirtleConfiguration = { pkgs, lib, ... }: {
     imports = [
     self.nixosModules.squirtleHardware
+    self.nixosModules.squirtleStorage
   ];
 
   boot.loader.systemd-boot.enable = true;
