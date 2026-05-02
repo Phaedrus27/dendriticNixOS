@@ -18,7 +18,6 @@
     extraGroups = [ "wheel" "networkmanager" ];
     password = "changeme";
     openssh.authorizedKeys.keys = [
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKsZFvX8+9AFnY4tuLj7izlgccAfggs5ZzOLx9gpeDvh phaedrus@charizard"
     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDAql98j2hnVZLCE2DSNDaaZJB08Zr27IsT96YCmGIf0kBeWjmWDd/jkx8/+9wE6gwhZpdZL1oMUcuxwoNvxx1/rv5JZA1aWObt1dfme5/IKfMWdWwI+2pBLvWoPA+H5b4GbTemQTFeD2gd/ykNELBsnd8jGi64JKF8bblARriIB+v/Swy9sMkmWiS7eggQAI7BZ+D/Ms+BO6nJIR/qjUBnvgejNsDHxb7nfj/5fBCGOPEzJT68BEYfw5U3V7caYe++mF0L2LvrsBQohSGwZSad31Vg9PAMyMDk0GfuGoEPVGglo/YDUCCgvfqPIom7GqyPqx023dHEGJosSvO8fY7H cardno:29_526_888"
   ];
   };
