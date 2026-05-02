@@ -8,6 +8,7 @@
     self.nixosModules.sops
     self.nixosModules.squirtleSops
     self.nixosModules.samba
+    self.nixosModules.protonvpn
   ];
 
   boot.loader.systemd-boot.enable = true;
