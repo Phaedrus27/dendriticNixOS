@@ -27,30 +27,27 @@
     Type = "oneshot";
     RemainAfterExit = true;
     ExecStart = pkgs.writeShellScript "wg-vpn-start" ''
+      #!${pkgs.bash}/bin/bash
+      set -e
+
       ${pkgs.iproute2}/bin/ip link add wg-vpn type wireguard
       ${pkgs.iproute2}/bin/ip link set wg-vpn netns vpn
-      ${pkgs.iproute2}/bin/ip -n vpn addr add 10.2.0.2/32 dev wg-vpn
       ${pkgs.iproute2}/bin/ip -n vpn link set lo up
-
-      PRIVKEY=$(grep PrivateKey /run/secrets/protonvpn_wireguard | awk '{print $3}')
-      PUBKEY=$(grep PublicKey /run/secrets/protonvpn_wireguard | awk '{print $3}')
-      ENDPOINT=$(grep Endpoint /run/secrets/protonvpn_wireguard | awk '{print $3}')
-
-      ${pkgs.iproute2}/bin/ip netns exec vpn \
-        ${pkgs.wireguard-tools}/bin/wg set wg-vpn private-key /dev/stdin <<< "$PRIVKEY"
+      ${pkgs.iproute2}/bin/ip -n vpn addr add "$(cat /run/secrets/protonvpn_address)" dev wg-vpn
 
       ${pkgs.iproute2}/bin/ip netns exec vpn \
         ${pkgs.wireguard-tools}/bin/wg set wg-vpn \
-          peer "$PUBKEY" \
+          private-key /run/secrets/protonvpn_privkey
+
+      ${pkgs.iproute2}/bin/ip netns exec vpn \
+        ${pkgs.wireguard-tools}/bin/wg set wg-vpn \
+          peer "$(cat /run/secrets/protonvpn_pubkey)" \
           allowed-ips "0.0.0.0/0,::/0" \
-          endpoint "$ENDPOINT" \
+          endpoint "$(cat /run/secrets/protonvpn_endpoint)" \
           persistent-keepalive 25
 
       ${pkgs.iproute2}/bin/ip -n vpn link set wg-vpn up
       ${pkgs.iproute2}/bin/ip -n vpn route add default dev wg-vpn
-    '';
-    ExecStop = pkgs.writeShellScript "wg-vpn-stop" ''
-      ${pkgs.iproute2}/bin/ip -n vpn link del wg-vpn
     '';
   };
 };
