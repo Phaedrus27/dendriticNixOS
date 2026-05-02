@@ -1,6 +1,7 @@
-{ config, lib, pkgs, ... }:
-{
-  imports = [ 
+{ self, inputs, ... }: {
+
+  flake.nixosModules.squirtleConfiguration = { pkgs, lib, ... }: {
+    imports = [
     self.nixosModules.squirtleHardware
   ];
 
@@ -24,4 +25,5 @@
   security.sudo.wheelNeedsPassword = false;
 
   system.stateVersion = "25.11";
+};
 }
