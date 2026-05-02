@@ -4,7 +4,7 @@
     services.tailscale = {
       enable = true;
       useRoutingFeatures = "server";
-      authKeyFile = lib.mkIf (config.sops.secrets ? tailscale_authkey) 
+      authKeyFile = lib.mkIf (config ? sops && config.sops ? secrets && config.sops.secrets ? tailscale_authkey)
         config.sops.secrets.tailscale_authkey.path;
     };
 
