@@ -4,9 +4,7 @@
     "bar": {
       "barType": "floating",
       "position": "top",
-      "monitors": [
-        "DP-1"
-      ],
+      "monitors": [],
       "density": "default",
       "showOutline": false,
       "showCapsule": true,
