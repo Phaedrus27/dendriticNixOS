@@ -17,6 +17,9 @@
     isNormalUser = true;
     extraGroups = [ "wheel" "networkmanager" ];
     password = "changeme";
+    openssh.authorizedKeys.keys = [
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKsZFvX8+9AFnY4tuLj7izlgccAfggs5ZzOLx9gpeDvh phaedrus@charizard"
+  ];
   };
 
    networking = {
