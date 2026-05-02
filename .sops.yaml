@@ -1,0 +1,17 @@
+keys:
+  - &yubikey1 age1yubikey1qgtf7s67lehalvgcyfm40ks44sjdnmdgh35a7335run4khhp3ahpkxztacs
+  - &yubikey2 age1yubikey1qtvjaflu0lu329y43l562v2g2kcvgn3x0mpsuvc6v92xyf2c8yv327kdq00
+  - &squirtle age1hjce6z08fe9f8tgn7cdh3ald0php42873rjhpfsu6gygg8n6hc8qnqn34f
+
+creation_rules:
+  - path_regex: secrets/squirtle/.*
+    key_groups:
+      - age:
+          - *yubikey1
+          - *yubikey2
+          - *squirtle
+  - path_regex: secrets/common/.*
+    key_groups:
+      - age:
+          - *yubikey1
+          - *yubikey2

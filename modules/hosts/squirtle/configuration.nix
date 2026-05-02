@@ -5,6 +5,8 @@
     self.nixosModules.squirtleHardware
     self.nixosModules.squirtleStorage
     self.nixosModules.tailscale
+    self.nixosModules.sops
+    self.nixosModules.squirtleSops
   ];
 
   boot.loader.systemd-boot.enable = true;

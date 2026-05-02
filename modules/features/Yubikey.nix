@@ -19,6 +19,8 @@
       yubikey-personalization
       gnupg
       age
+      sops
+      age-plugin-yubikey
     ];
   };
 }
