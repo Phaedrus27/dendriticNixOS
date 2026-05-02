@@ -2,9 +2,10 @@
 
   flake.nixosModules.charizardConfiguration = { pkgs, lib, ... }: {
   	imports = [
-      self.nixosModules.charizardNiri
+      self.nixosModules.Niri
       self.nixosModules.gaming
   		self.nixosModules.charizardHardware
+      self.nixosModules.plymouth
     ];
 
     # Bootloader.

@@ -1,5 +1,5 @@
 { self, inputs, ... }: {
-	flake.nixosModules.charizardNiri = { pkgs, lib, ... }: {
+	flake.nixosModules.Niri = { pkgs, lib, ... }: {
 		programs.niri = {
 			enable = true;
 			package = self.packages.${pkgs.stdenv.hostPlatform.system}.myNiri;
@@ -39,22 +39,15 @@
 
 				outputs = {
 					"DP-1" = {
-						mode = {
-							width = 2560;
-							height = 1440;
-						};
-						position = { x = 0; y = 0; };
+						mode = "2560x1440";
       			scale = 1.0;
-
-						"HDMI-A-1" = {
-      				mode = {
-        				width = 2560;
-        				height = 1880;
-     					};
-      				position = { x = 2560; y = 0; };
-      				scale = 1.0;
-						};
 					};
+
+					"HDMI-A-1" = {
+      			mode = "2560x2880";
+      			scale = 1.0;
+					};
+				};
 
 				gestures = [
 					{
@@ -64,7 +57,7 @@
 				
 
 				binds = { 
-					"Mod+Return".spawn-sh = lib.getExe pkgs.kitty;
+					"Mod+Return".spawn-sh = lib.getExe self.packages.${pkgs.stdenv.hostPlatform.system}.myAlacritty;
 
 					"Mod+Q".close-window = {};
 					"Mod+F".maximize-column = {};
@@ -76,19 +69,35 @@
 					"Mod+WheelScrollLeft".focus-column-left = {};
 
 					"Mod+Left".focus-column-left = {};
-   				"Mod+Right".focus-column-right = {};
-    			"Mod+Down".focus-workspace-down = {};
-    			"Mod+Up".focus-workspace-up = {};
+   					"Mod+Right".focus-column-right = {};
+    				"Mod+Down".focus-workspace-down = {};
+					"Mod+Up".focus-workspace-up = {};
+					
+					"Mod+h".focus-column-left = {};
+ 					"Mod+l".focus-column-right = {};
+  					"Mod+k".focus-window-up = {};
+  					"Mod+j".focus-window-down = {};
+
+					"Mod+colon".focus-monitor-left = {};
+  					"Mod+semicolon".focus-monitor-right = {};
+
+					"Mod+equal".move-window-to-monitor-right = {};
+  					"Mod+ellipsis".move-window-to-monitor-left = {};
 
 					"Mod+Minus".set-column-width = "-10%";
-          "Mod+Plus".set-column-width = "+10%";
-          "Mod+Shift+Minus".set-window-height = "-10%";
-          "Mod+Shift+Plus".set-window-height = "+10%";
+          			"Mod+Plus".set-column-width = "+10%";
+          			"Mod+Shift+Minus".set-window-height = "-10%";
+          			"Mod+Shift+Plus".set-window-height = "+10%";
 
-    			"Mod+Shift+Left".move-column-left = {};
-    			"Mod+Shift+Right".move-column-right = {};
-    			"Mod+Shift+Down".move-column-to-workspace-down = {};
-    			"Mod+Shift+Up".move-column-to-workspace-up = {};
+    				"Mod+Shift+Left".move-column-left = {};
+    				"Mod+Shift+Right".move-column-right = {};
+    				"Mod+Shift+Down".move-column-to-workspace-down = {};
+    				"Mod+Shift+Up".move-column-to-workspace-up = {};
+
+					"Mod+Shift+h".move-column-left = {};
+  					"Mod+Shift+l".move-column-right = {};
+  					"Mod+Shift+k".move-window-up = {};
+  					"Mod+Shift+j".move-window-down = {};
 
 					"Mod+Space".spawn-sh = "${lib.getExe self'.packages.myNoctalia} ipc call launcher toggle";
 				};
