@@ -27,31 +27,31 @@
     Type = "oneshot";
     RemainAfterExit = true;
     ExecStart = pkgs.writeShellScript "wg-vpn-start" ''
-  cp /run/secrets/protonvpn_wireguard /tmp/wg-vpn.conf
-  ${pkgs.iproute2}/bin/ip link add wg-vpn type wireguard
-  ${pkgs.iproute2}/bin/ip link set wg-vpn netns vpn
-  # Set private key
-  PRIVKEY=$(grep PrivateKey /tmp/wg-vpn.conf | awk '{print $3}')
-  ${pkgs.iproute2}/bin/ip netns exec vpn \
-    ${pkgs.wireguard-tools}/bin/wg set wg-vpn private-key <(echo $PRIVKEY)
-  # Add peer
-  PUBKEY=$(grep PublicKey /tmp/wg-vpn.conf | awk '{print $3}')
-  ENDPOINT=$(grep Endpoint /tmp/wg-vpn.conf | awk '{print $3}')
-  ${pkgs.iproute2}/bin/ip netns exec vpn \
-    ${pkgs.wireguard-tools}/bin/wg set wg-vpn \
-      peer $PUBKEY \
-      allowed-ips 0.0.0.0/0,::/0 \
-      endpoint $ENDPOINT \
-      persistent-keepalive 25
-  ${pkgs.iproute2}/bin/ip -n vpn addr add 10.2.0.2/32 dev wg-vpn
-  ${pkgs.iproute2}/bin/ip -n vpn link set wg-vpn up
-  ${pkgs.iproute2}/bin/ip -n vpn route add default dev wg-vpn
-  ${pkgs.iproute2}/bin/ip -n vpn link set lo up
-  rm /tmp/wg-vpn.conf
-'';
-ExecStop = pkgs.writeShellScript "wg-vpn-stop" ''
-  ${pkgs.iproute2}/bin/ip -n vpn link del wg-vpn
-'';
+      ${pkgs.iproute2}/bin/ip link add wg-vpn type wireguard
+      ${pkgs.iproute2}/bin/ip link set wg-vpn netns vpn
+      ${pkgs.iproute2}/bin/ip -n vpn addr add 10.2.0.2/32 dev wg-vpn
+      ${pkgs.iproute2}/bin/ip -n vpn link set lo up
+
+      PRIVKEY=$(grep PrivateKey /run/secrets/protonvpn_wireguard | awk '{print $3}')
+      PUBKEY=$(grep PublicKey /run/secrets/protonvpn_wireguard | awk '{print $3}')
+      ENDPOINT=$(grep Endpoint /run/secrets/protonvpn_wireguard | awk '{print $3}')
+
+      ${pkgs.iproute2}/bin/ip netns exec vpn \
+        ${pkgs.wireguard-tools}/bin/wg set wg-vpn private-key /dev/stdin <<< "$PRIVKEY"
+
+      ${pkgs.iproute2}/bin/ip netns exec vpn \
+        ${pkgs.wireguard-tools}/bin/wg set wg-vpn \
+          peer "$PUBKEY" \
+          allowed-ips "0.0.0.0/0,::/0" \
+          endpoint "$ENDPOINT" \
+          persistent-keepalive 25
+
+      ${pkgs.iproute2}/bin/ip -n vpn link set wg-vpn up
+      ${pkgs.iproute2}/bin/ip -n vpn route add default dev wg-vpn
+    '';
+    ExecStop = pkgs.writeShellScript "wg-vpn-stop" ''
+      ${pkgs.iproute2}/bin/ip -n vpn link del wg-vpn
+    '';
   };
 };
 
