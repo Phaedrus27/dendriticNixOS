@@ -7,6 +7,7 @@
     self.nixosModules.tailscale
     self.nixosModules.sops
     self.nixosModules.squirtleSops
+    self.nixosModules.samba
   ];
 
   boot.loader.systemd-boot.enable = true;
