@@ -4,7 +4,7 @@
     imports = [
       # Include the results of the hardware scan.
       self.nixosModules.mewHardware
-      self.nixosModules.niri
+      self.nixosModules.environment
       self.nixosModules.tailscale
       ];
 

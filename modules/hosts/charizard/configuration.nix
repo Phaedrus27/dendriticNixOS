@@ -2,7 +2,7 @@
 
   flake.nixosModules.charizardConfiguration = { pkgs, lib, ... }: {
   	imports = [
-      self.nixosModules.niri
+      self.nixosModules.environment
       self.nixosModules.gaming
   		self.nixosModules.charizardHardware
       self.nixosModules.yubikey
