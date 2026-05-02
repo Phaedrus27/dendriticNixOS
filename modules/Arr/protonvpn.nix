@@ -27,21 +27,15 @@
     Type = "oneshot";
     RemainAfterExit = true;
     ExecStart = pkgs.writeShellScript "wg-vpn-start" ''
-  # Create WireGuard interface in host namespace
   ${pkgs.iproute2}/bin/ip link add wg-vpn type wireguard
-  # Move it into the vpn namespace
   ${pkgs.iproute2}/bin/ip link set wg-vpn netns vpn
-  # Apply config inside namespace
+  # Use syncconf which handles the full config including peers
   ${pkgs.iproute2}/bin/ip netns exec vpn \
-    ${pkgs.wireguard-tools}/bin/wg setconf wg-vpn \
-    ${config.sops.secrets.protonvpn_wireguard.path}
-  # Add IP address inside namespace
+    ${pkgs.wireguard-tools}/bin/wg syncconf wg-vpn \
+    <(${pkgs.wireguard-tools}/bin/wg-quick strip /run/secrets/protonvpn_wireguard)
   ${pkgs.iproute2}/bin/ip -n vpn addr add 10.2.0.2/32 dev wg-vpn
-  # Bring interface up
   ${pkgs.iproute2}/bin/ip -n vpn link set wg-vpn up
-  # Add default route through WireGuard
   ${pkgs.iproute2}/bin/ip -n vpn route add default dev wg-vpn
-  # Bring up loopback
   ${pkgs.iproute2}/bin/ip -n vpn link set lo up
 '';
 ExecStop = pkgs.writeShellScript "wg-vpn-stop" ''
