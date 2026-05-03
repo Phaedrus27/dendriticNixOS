@@ -7,8 +7,17 @@
       dataDir = "/var/lib/jellyfin";
     };
 
-    # Give jellyfin access to media
-    users.users.jellyfin.extraGroups = [ "radarr" "sonarr" ];
+    users.users.jellyfin.extraGroups = [ "radarr" "sonarr" "video" "render" ];
+
+    # Intel Quick Sync
+    hardware.graphics = {
+      enable = true;
+      extraPackages = with pkgs; [
+        intel-media-driver
+        intel-compute-runtime
+        vpl-gpu-rt
+      ];
+    };
 
   };
 }
