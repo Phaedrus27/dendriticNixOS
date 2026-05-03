@@ -8,10 +8,7 @@
     self.nixosModules.sops
     self.nixosModules.squirtleSops
     self.nixosModules.samba
-    self.nixosModules.protonvpn
-    self.nixosModules.qbittorrent
-    self.nixosModules.arr
-    self.nixosModules.jellyfin
+    self.nixosModules.mediaServer
   ];
 
   boot.loader.systemd-boot.enable = true;

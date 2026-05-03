@@ -4,5 +4,12 @@
       self.nixosModules.niri
       self.nixosModules.nautilus
     ];
+
+    environment.systemPackages = with pkgs; [
+      protonvpn-gui
+      tailscale-systray
+    ];
+
+    services.networkmanager.enable = true;
   };
 }
