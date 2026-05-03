@@ -11,6 +11,7 @@
     self.nixosModules.protonvpn
     self.nixosModules.qbittorrent
     self.nixosModules.arr
+    self.nixosModules.jellyfin
   ];
 
   boot.loader.systemd-boot.enable = true;
