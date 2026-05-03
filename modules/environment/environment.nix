@@ -10,6 +10,6 @@
       tailscale-systray
     ];
 
-    services.networkmanager.enable = true;
+    networking.networkmanager.enable = true;
   };
 }
