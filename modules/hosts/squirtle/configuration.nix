@@ -10,6 +10,7 @@
     self.nixosModules.samba
     self.nixosModules.protonvpn
     self.nixosModules.qbittorrent
+    self.nixosModules.arr
   ];
 
   boot.loader.systemd-boot.enable = true;
