@@ -22,7 +22,7 @@
         User = "qbittorrent";
         Group = "qbittorrent";
         NetworkNamespacePath = "/run/netns/vpn";
-        ExecStart = "${pkgs.qbittorrent-nox}/bin/qbittorrent-nox --webui-port=8080";
+        ExecStart = "${pkgs.qbittorrent-nox}/bin/qbittorrent-nox --webui-port=8080 --confirm-legal-notice --webui-address=0.0.0.0";
         Restart = "on-failure";
       };
     };
