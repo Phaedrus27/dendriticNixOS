@@ -7,6 +7,7 @@
   		self.nixosModules.charizardHardware
       self.nixosModules.yubikey
       self.nixosModules.tailscale
+      self.nixosModules.syncthing
     ];
 
     # Bootloader.
