@@ -3,7 +3,6 @@
 
     services.syncthing = {
       enable = true;
-      openFirewall = true;
       user = "phaedrus";
       dataDir = "/home/phaedrus";
       configDir = "/home/phaedrus/.config/syncthing";
@@ -23,5 +22,8 @@
         };
       };
     };
+
+    networking.firewall.allowedTCPPorts = [ 22000 ];
+    networking.firewall.allowedUDPPorts = [ 22000 21027 ];
   };
 }
