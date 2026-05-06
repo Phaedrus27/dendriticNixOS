@@ -91,13 +91,6 @@
     # Install firefox.
     programs.firefox.enable = true;
 
-    programs.niri.settings.outputs = {
-      "eDP-1" = {
-        mode = "2256x1504";
-        scale = 1.5;
-      };
-    };
-
     # Allow unfree packages
     nixpkgs.config.allowUnfree = true;
 
