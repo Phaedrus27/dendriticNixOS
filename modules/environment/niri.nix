@@ -43,7 +43,7 @@
 					}
 				];
 
-				settings.workspaces = [
+				workspaces = [
 					{ name = "1"; }
 					{ name = "2"; }
 					{ name = "3"; }
@@ -117,10 +117,10 @@
 					"Mod+semicolon".focus-monitor-right = {};
 
 					# Workspace scroll
-					"Mod+WheelScrollDown" = { cooldown-ms = 150; focus-workspace-down = {}; };
-					"Mod+WheelScrollUp" = { cooldown-ms = 150; focus-workspace-up = {}; };
-					"Mod+Ctrl+WheelScrollDown" = { cooldown-ms = 150; move-column-to-workspace-down = {}; };
-					"Mod+Ctrl+WheelScrollUp" = { cooldown-ms = 150; move-column-to-workspace-up = {}; };
+					"Mod+WheelScrollDown".focus-workspace-down = {};
+					"Mod+WheelScrollUp".focus-workspace-up = {};
+					"Mod+Ctrl+WheelScrollDown".move-column-to-workspace-down = {};
+					"Mod+Ctrl+WheelScrollUp".move-column-to-workspace-up = {};
 					"Mod+WheelScrollRight".focus-column-right = {};
 					"Mod+WheelScrollLeft".focus-column-left = {};
 					"Mod+Ctrl+WheelScrollRight".move-column-right = {};
