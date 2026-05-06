@@ -37,18 +37,6 @@
 					}
 				];
 
-				outputs = {
-					"DP-1" = {
-						mode = "2560x1440";
-      			scale = 1.0;
-					};
-
-					"HDMI-A-1" = {
-      			mode = "2560x2880";
-      			scale = 1.0;
-					};
-				};
-
 				gestures = [
 					{
 						hot-corners.off = {};
