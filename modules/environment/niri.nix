@@ -56,7 +56,7 @@
 				binds = { 
 					# Hotkey overlay
 					"Mod+Shift+Escape".show-hotkey-overlay = {};
-					
+
 					# Applications
 					"Mod+Return".spawn-sh = lib.getExe self.packages.${pkgs.stdenv.hostPlatform.system}.myAlacritty;
 					"Mod+Space".spawn-sh = "${lib.getExe self'.packages.myNoctalia} ipc call launcher toggle";
@@ -128,10 +128,10 @@
 					"Ctrl+Shift+3".screenshot-window = {};
 
 					# Escape / power
-					"Mod+Escape" = { allow-inhibiting = false; toggle-keyboard-shortcuts-inhibit = {}; };
+					"Mod+Escape".toggle-keyboard-shortcuts-inhibit = {};
 					"Ctrl+Alt+Delete".quit = {};
 					"Mod+Shift+P".power-off-monitors = {};
-					"Mod+O" = { repeat = false; toggle-overview = {}; };
+					"Mod+O".toggle-overview = {};
 
 					# Workspace switching — unshifted keys on AFNOR
 					"Mod+agrave".focus-workspace = "1";
