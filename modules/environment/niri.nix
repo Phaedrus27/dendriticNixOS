@@ -56,32 +56,14 @@
 				binds = { 
 					# Hotkey overlay
 					"Mod+Shift+Escape".show-hotkey-overlay = {};
-
+					
 					# Applications
-					"Mod+Return" = {
-						hotkey-overlay-title = "Open Terminal: Alacritty";
-						spawn-sh = lib.getExe self.packages.${pkgs.stdenv.hostPlatform.system}.myAlacritty;
-					};
-					"Mod+Space" = {
-						hotkey-overlay-title = "Open App Launcher";
-						spawn-sh = "${lib.getExe self'.packages.myNoctalia} ipc call launcher toggle";
-					};
-					"Mod+B" = {
-						hotkey-overlay-title = "Open Browser: Firefox";
-						spawn = "firefox";
-					};
-					"Mod+E" = {
-						hotkey-overlay-title = "File Manager: Nautilus";
-						spawn = "nautilus";
-					};
-					"Mod+Alt+L" = {
-						hotkey-overlay-title = "Lock Screen";
-						spawn-sh = "${lib.getExe self'.packages.myNoctalia} ipc call lockScreen lock";
-					};
-					"Mod+Shift+Q" = {
-						hotkey-overlay-title = "Session Menu";
-						spawn-sh = "${lib.getExe self'.packages.myNoctalia} ipc call sessionMenu toggle";
-					};
+					"Mod+Return".spawn-sh = lib.getExe self.packages.${pkgs.stdenv.hostPlatform.system}.myAlacritty;
+					"Mod+Space".spawn-sh = "${lib.getExe self'.packages.myNoctalia} ipc call launcher toggle";
+					"Mod+B".spawn = "firefox";
+					"Mod+E".spawn = "nautilus";
+					"Mod+Alt+L".spawn-sh = "${lib.getExe self'.packages.myNoctalia} ipc call lockScreen lock";
+					"Mod+Shift+Q".spawn-sh = "${lib.getExe self'.packages.myNoctalia} ipc call sessionMenu toggle";
 
 					# Window focus
   				"Mod+Q".close-window = {};
