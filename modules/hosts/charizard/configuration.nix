@@ -14,6 +14,19 @@
     boot.loader.systemd-boot.enable = true;
     boot.loader.efi.canTouchEfiVariables = true;
 
+    programs.niri.settings.outputs = {
+      "DP-1" = {
+        mode = "2560x1440";
+        scale = 1.0;
+        position = { x = 0; y = 0; };
+      };
+      "HDMI-A-1" = {
+        mode = "2560x2880";
+        scale = 1.0;
+        position = { x = 2560; y = -1360; };
+      };
+    };
+
     networking.hostName = "charizard"; # Define your hostname.
     # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
