@@ -113,9 +113,9 @@
 					"Mod+C".center-column = {};
 					"Mod+Ctrl+C".center-visible-columns = {};
 					"Mod+Minus".set-column-width = "-10%";
-					"Mod+equal".set-column-width = "+10%";
+					"Mod+plus".set-column-width = "+10%";
 					"Mod+Shift+Minus".set-window-height = "-10%";
-					"Mod+Shift+equal".set-window-height = "+10%";
+					"Mod+Shift+plus".set-window-height = "+10%";
 
 					# Modes
 					"Mod+T".toggle-window-floating = {};
@@ -123,9 +123,9 @@
 					"Mod+W".toggle-column-tabbed-display = {};
 
 					# Screenshots
-					"Ctrl+Shift+1".screenshot = {};
-					"Ctrl+Shift+2".screenshot-screen = {};
-					"Ctrl+Shift+3".screenshot-window = {};
+					"Ctrl+Shift+agrave".screenshot = {};
+					"Ctrl+Shift+eacute".screenshot-screen = {};
+					"Ctrl+Shift+egrave".screenshot-window = {};
 
 					# Escape / power
 					"Mod+Escape".toggle-keyboard-shortcuts-inhibit = {};
