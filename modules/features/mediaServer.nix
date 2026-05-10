@@ -13,11 +13,16 @@
         server = [ "192.168.1.1" ];
         listen-address = [ "127.0.0.1" "100.85.58.101" ];
         bind-interfaces = true;
+        address = [
+          "/radarr.home/100.85.58.101"
+          "/sonarr.home/100.85.58.101"
+          "/prowlarr.home/100.85.58.101"
+          "/bazarr.home/100.85.58.101"
+          "/jellyfin.home/100.85.58.101"
+          "/qbittorrent.home/100.85.58.101"
+          "/squirtle.home/100.85.58.101"
+        ];
       };
     };
-
-    networking.firewall.allowedTCPPorts = [ 53 ];
-    networking.firewall.allowedUDPPorts = [ 53 ];
-    networking.firewall.trustedInterfaces = [ "tailscale0" ];
   };
-}
+} 
