@@ -9,6 +9,7 @@
     self.nixosModules.squirtleSops
     self.nixosModules.samba
     self.nixosModules.mediaServer
+    self.nixosModules.syncthing
   ];
 
   boot.loader.systemd-boot.enable = true;

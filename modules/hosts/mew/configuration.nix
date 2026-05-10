@@ -6,6 +6,7 @@
       self.nixosModules.mewHardware
       self.nixosModules.environment
       self.nixosModules.tailscale
+      self.nixosModules.syncthing
       ];
 
     # Bootloader.
