@@ -108,7 +108,6 @@
     vesktop
     vlc
     pywalfox-native
-    obsidian
     ];
 
     nix.gc = {

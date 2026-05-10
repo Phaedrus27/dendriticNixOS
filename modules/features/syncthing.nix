@@ -35,8 +35,8 @@
             ];
             devices = lib.mkMerge [
               (lib.mkIf (config.networking.hostName == "squirtle") [ "charizard" "mew" "phone" ])
-              (lib.mkIf (config.networking.hostName == "charizard") [ "squirtle" "mew" "phone" ])
-              (lib.mkIf (config.networking.hostName == "mew") [ "squirtle" "charizard" "phone" ])
+              (lib.mkIf (config.networking.hostName == "charizard") [ "squirtle" ])
+              (lib.mkIf (config.networking.hostName == "mew") [ "squirtle" ])
             ];
           };
         };
