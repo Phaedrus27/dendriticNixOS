@@ -8,6 +8,7 @@
       self.nixosModules.yubikey
       self.nixosModules.tailscale
       self.nixosModules.syncthing
+      self.nixosModules.obsidian
     ];
 
     # Bootloader.
