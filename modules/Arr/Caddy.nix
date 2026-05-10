@@ -4,37 +4,37 @@
     services.caddy = {
       enable = true;
       virtualHosts = {
-        "radarr.home" = {
+        "http://radarr.home" = {
           extraConfig = ''
             reverse_proxy localhost:7878
           '';
         };
-        "sonarr.home" = {
+        "http://sonarr.home" = {
           extraConfig = ''
             reverse_proxy localhost:8989
           '';
         };
-        "prowlarr.home" = {
+        "http://prowlarr.home" = {
           extraConfig = ''
             reverse_proxy localhost:9696
           '';
         };
-        "bazarr.home" = {
+        "http://bazarr.home" = {
           extraConfig = ''
             reverse_proxy localhost:6767
           '';
         };
-        "jellyfin.home" = {
+        "http://jellyfin.home" = {
           extraConfig = ''
             reverse_proxy localhost:8096
           '';
         };
-        "qbittorrent.home" = {
+        "http://qbittorrent.home" = {
           extraConfig = ''
             reverse_proxy 10.99.0.2:8080
           '';
         };
-        "squirtle.home" = {
+        "http://squirtle.home" = {
           extraConfig = ''
             respond "squirtle is alive"
           '';
