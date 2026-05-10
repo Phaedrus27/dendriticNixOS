@@ -5,6 +5,7 @@
       self.nixosModules.qbittorrent
       self.nixosModules.arr
       self.nixosModules.jellyfin
+      self.nixosModules.caddy
     ];
   };
 }
