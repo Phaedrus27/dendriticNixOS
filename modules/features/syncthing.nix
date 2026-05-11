@@ -29,9 +29,9 @@
         folders = {
           obsidian = {
             path = lib.mkMerge [
-              (lib.mkIf (config.networking.hostName == "squirtle") "/mnt/storage/obsidian")
-              (lib.mkIf (config.networking.hostName == "charizard") "/home/phaedrus/obsidian")
-              (lib.mkIf (config.networking.hostName == "mew") "/home/phaedrus/obsidian")
+              (lib.mkIf (config.networking.hostName == "squirtle") "/mnt/storage/syncthing")
+              (lib.mkIf (config.networking.hostName == "charizard") "/home/phaedrus/syncthing")
+              (lib.mkIf (config.networking.hostName == "mew") "/home/phaedrus/syncthing")
             ];
             devices = lib.mkMerge [
               (lib.mkIf (config.networking.hostName == "squirtle") [ "charizard" "mew" "phone" ])
