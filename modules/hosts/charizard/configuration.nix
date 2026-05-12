@@ -9,6 +9,7 @@
       self.nixosModules.tailscale
       self.nixosModules.syncthing
       self.nixosModules.obsidian
+      self.nixosModules.chromium
     ];
 
     # Bootloader.
