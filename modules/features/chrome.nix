@@ -1,5 +1,8 @@
 { self, inputs, ... }: {
-  flake.nixosModules.chrome = { pkgs, ... }: {
-    environment.systemPackages = [ pkgs.google-chrome ];
+  flake.nixosModules.chromium = { pkgs, ... }: {
+    environment.systemPackages.pkgs = [ 
+      chromium
+      keychron-udev-rules
+    ];
   };
 }
