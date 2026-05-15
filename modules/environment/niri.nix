@@ -18,7 +18,7 @@
 
 				input = {
 					keyboard.xkb = {
-						layout = "fr";
+						layout = "fr,us";
 						variant = "afnor";
 					};
 					touchpad = {
@@ -54,6 +54,9 @@
 				binds = { 
 					# Hotkey overlay
 					"Mod+Shift+Escape".show-hotkey-overlay = {};
+
+					# Layout toggle
+					"Mod+Shift+K".switch-layout = "next";
 
 					# Applications
 					"Mod+Return".spawn-sh = lib.getExe self.packages.${pkgs.stdenv.hostPlatform.system}.myAlacritty;
