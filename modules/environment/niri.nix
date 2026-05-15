@@ -17,17 +17,15 @@
 				xwayland-satellite.path = lib.getExe pkgs.xwayland-satellite;
 
 				input = {
-				
 					keyboard.xkb = {
 						layout = "fr";
 						variant = "afnor";
 					};
-
 					touchpad = {
 						natural-scroll = {};
 						tap = {};
 					};
-				};
+				};	
 				
 				window-rules = [
 					{
