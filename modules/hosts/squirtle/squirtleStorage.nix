@@ -70,10 +70,10 @@
               rel="''${f#/mnt/cache}"
               dest="/mnt/disk1''${rel}"
               mkdir -p "$(dirname "$dest")"
-              rsync -a --remove-source-files "$f" "$dest" && \
+              ${pkgs.rsync}/bin/rsync -a --remove-source-files "$f" "$dest" && \
                 find "$(dirname "$f")" -mindepth 1 -empty -delete
-             done
-          '';
+            done
+        '';
       };
     };
 
