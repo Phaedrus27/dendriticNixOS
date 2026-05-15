@@ -10,6 +10,7 @@
       self.nixosModules.syncthing
       self.nixosModules.obsidian
       self.nixosModules.chromium
+      self.nixosModules.keychron
     ];
 
     # Bootloader.
