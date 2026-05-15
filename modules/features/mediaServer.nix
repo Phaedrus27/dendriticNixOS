@@ -6,6 +6,7 @@
       self.nixosModules.arr
       self.nixosModules.jellyfin
       self.nixosModules.caddy
+      self.nixosModules.monitoring
     ];
     services.dnsmasq = {
       enable = true;
