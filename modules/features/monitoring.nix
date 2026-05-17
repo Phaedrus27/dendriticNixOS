@@ -49,8 +49,7 @@
           if [ "$USAGE" -gt "90" ]; then
             ${pkgs.curl}/bin/curl -s -X POST "$WEBHOOK" \
               -H "Content-Type: application/json" \
-              -d "{\"content\": \"⚠️ **Cache Warning on squirtle**: /mnt/cache is at ${USAGE}% capacity.\"}"
-          fi
+              -d "{\"content\": \"⚠️ **Cache Warning on squirtle**: /mnt/cache is at ''${USAGE}% capacity.\"}"
         '';
       };
     };
