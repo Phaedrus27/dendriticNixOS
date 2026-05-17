@@ -10,7 +10,7 @@
       secrets.protonvpn_address = {};
       secrets.discord_webhook = {};
       secrets.paperless_admin_password = {
-        owner = "paperles";
+        owner = "paperless";
       };
     };
   };
