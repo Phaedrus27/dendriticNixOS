@@ -7,7 +7,7 @@
       dataDir = "/var/lib/jellyfin";
     };
 
-    users.users.jellyfin.extraGroups = [ "radarr" "sonarr" "video" "render" ];
+    users.users.jellyfin.extraGroups = [ "media" "video" "render" ];
 
     # Intel Quick Sync
     hardware.graphics = {
