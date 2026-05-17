@@ -189,7 +189,7 @@
             }
             output "HDMI-A-1" {
               mode "2560x2880@60"
-              position x=2560 y=296
+              position x=2560 y=240
               scale 1.25
             }
           '';
