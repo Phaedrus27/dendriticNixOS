@@ -22,6 +22,7 @@
           "/jellyfin.home/100.85.58.101"
           "/qbittorrent.home/100.85.58.101"
           "/squirtle.home/100.85.58.101"
+          "/paperless.home/100.85.58.101"
         ];
       };
     };
