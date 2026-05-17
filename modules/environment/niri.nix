@@ -184,25 +184,33 @@
           outputs = {
             "DP-1" = {
               mode = {
-                width = 2560;
-                height = 1440;
-                refresh = 60.0;
+                _attrs = {
+                  width = 2560;
+                  height = 1440;
+                  refresh = 60.0;
+                };
               };
               position = {
-                x = 0;
-                y = 0;
+                _attrs = {
+                  x = 0;
+                  y = 0;
+                };
               };
               scale = 1.0;
             };
             "HDMI-A-1" = {
               mode = {
-                width = 2560;
-                height = 2880;
-                refresh = 60.0;
+                _attrs = {
+                  width = 2560;
+                  height = 2880;
+                  refresh = 60.0;
+                };
               };
               position = {
-                x = 2560;
-                y = 30;
+                _attrs = {
+                  x = 2560;
+                  y = 30;
+                };
               };
               scale = 1.0;
             };
@@ -216,13 +224,17 @@
           outputs = {
             "eDP-1" = {
               mode = {
-                width = 2256;
-                height = 1504;
-                refresh = 60.0;
+                _attrs = {
+                  width = 2256;
+                  height = 1504;
+                  refresh = 60.0;
+                };
               };
               position = {
-                x = 0;
-                y = 0;
+                _attrs = {
+                  x = 0;
+                  y = 0;
+                };
               };
               scale = 1.5;
             };
