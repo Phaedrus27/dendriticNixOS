@@ -10,7 +10,7 @@
     self.nixosModules.samba
     self.nixosModules.mediaServer
     self.nixosModules.syncthing
-    self.nixosModuels.paperless
+    self.nixosModules.paperless
   ];
 
   boot.loader.systemd-boot.enable = true;
