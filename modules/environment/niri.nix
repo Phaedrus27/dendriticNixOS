@@ -183,12 +183,12 @@
         settings = commonSettings // {
           extraConfig = ''
             output "DP-1" {
-              mode 2560x1440@60
+              mode width=2560 height=1440 refresh=60.0
               position x=0 y=0
               scale 1.0
             }
             output "HDMI-A-1" {
-              mode 2560x2880@60
+              mode width=2560 height=2880 refresh=60.0
               position x=2560 y=30
               scale 1.0
             }
@@ -201,7 +201,7 @@
         settings = commonSettings // {
           extraConfig = ''
             output "eDP-1" {
-              mode 2256x1504@60
+              mode width=2256 height=1504 refresh=60.0
               position x=0 y=0
               scale 1.5
             }
