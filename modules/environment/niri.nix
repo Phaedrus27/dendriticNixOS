@@ -180,37 +180,42 @@
 
       packages.myNiriCharizard = inputs.wrapper-modules.wrappers.niri.wrap {
         inherit pkgs;
+        v2-settings = true;
         settings = commonSettings // {
           outputs = {
             "DP-1" = {
-              mode = {
-                _attrs = {
+              mode = _: {
+                props = {
                   width = 2560;
                   height = 1440;
                   refresh = 60.0;
                 };
+                content = {};
               };
-              position = {
-                _attrs = {
+              position = _: {
+                props = {
                   x = 0;
                   y = 0;
                 };
+                content = {};
               };
               scale = 1.0;
             };
             "HDMI-A-1" = {
-              mode = {
-                _attrs = {
+              mode = _: {
+                props = {
                   width = 2560;
                   height = 2880;
                   refresh = 60.0;
                 };
+                content = {};
               };
-              position = {
-                _attrs = {
+              position = _: {
+                props = {
                   x = 2560;
                   y = 30;
                 };
+                content = {};
               };
               scale = 1.0;
             };
@@ -220,21 +225,24 @@
 
       packages.myNiriMew = inputs.wrapper-modules.wrappers.niri.wrap {
         inherit pkgs;
+        v2-settings = true;
         settings = commonSettings // {
           outputs = {
             "eDP-1" = {
-              mode = {
-                _attrs = {
+              mode = _: {
+                props = {
                   width = 2256;
                   height = 1504;
                   refresh = 60.0;
                 };
+                content = {};
               };
-              position = {
-                _attrs = {
+              position = _: {
+                props = {
                   x = 0;
                   y = 0;
                 };
+                content = {};
               };
               scale = 1.5;
             };
