@@ -2,16 +2,16 @@
   flake.nixosModules.niri = { pkgs, lib, ... }: {
     programs.niri = {
       enable = true;
-      package = self.packages.${pkgs.stdenv.hostPlatform.system}.myNiri;
+      package = lib.mkDefault self.packages.${pkgs.stdenv.hostPlatform.system}.myNiri;
     };
   };
 
   flake.nixosModules.charizardNiri = { pkgs, lib, ... }: {
-    programs.niri.package = self.packages.${pkgs.stdenv.hostPlatform.system}.myNiriCharizard;
+    programs.niri.package = lib.mkForce self.packages.${pkgs.stdenv.hostPlatform.system}.myNiriCharizard;
   };
 
   flake.nixosModules.mewNiri = { pkgs, lib, ... }: {
-    programs.niri.package = self.packages.${pkgs.stdenv.hostPlatform.system}.myNiriMew;
+    programs.niri.package = lib.mkForce self.packages.${pkgs.stdenv.hostPlatform.system}.myNiriMew;
   };
 
   perSystem = { pkgs, lib, self', ... }:
