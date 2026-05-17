@@ -184,12 +184,12 @@
           extraConfig = ''
             output "DP-1" {
               mode "2560x1440@60"
-              position x=0 y=0
+              position x=0 y=1440
               scale 1.0
             }
             output "HDMI-A-1" {
               mode "2560x2880@60"
-              position x=2560 y=30
+              position x=2560 y=0
               scale 1.0
             }
           '';

@@ -151,7 +151,7 @@
       "avatarImage": "/home/phaedrus/.face",
       "dimmerOpacity": 0.2,
       "showScreenCorners": true,
-      "forceBlackScreenCorners": true,
+      "forceBlackScreenCorners": false,
       "scaleRatio": 1,
       "radiusRatio": 1,
       "iRadiusRatio": 1,
