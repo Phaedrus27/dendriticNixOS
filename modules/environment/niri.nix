@@ -1,47 +1,27 @@
 { self, inputs, ... }: {
-  flake.nixosModules.charizardNiri = { pkgs, lib, ... }: {
+  flake.nixosModules.niri = { pkgs, lib, ... }: {
     programs.niri = {
       enable = true;
       package = self.packages.${pkgs.stdenv.hostPlatform.system}.myNiri;
     };
   };
 
-  perSystem = { pkgs, lib, self', ... }: {
-    packages.myNiri = inputs.wrapper-modules.wrappers.niri.wrap {
-      inherit pkgs;
-      settings = {
+  flake.nixosModules.charizardNiri = { pkgs, lib, ... }: {
+    programs.niri.package = self.packages.${pkgs.stdenv.hostPlatform.system}.myNiriCharizard;
+  };
+
+  flake.nixosModules.mewNiri = { pkgs, lib, ... }: {
+    programs.niri.package = self.packages.${pkgs.stdenv.hostPlatform.system}.myNiriMew;
+  };
+
+  perSystem = { pkgs, lib, self', ... }:
+    let
+      commonSettings = {
         spawn-at-startup = [
           (lib.getExe self'.packages.myNoctalia)
         ];
 
         xwayland-satellite.path = lib.getExe pkgs.xwayland-satellite;
-
-        outputs = {
-          "DP-1" = {
-            mode = {
-              width = 2560;
-              height = 1440;
-              refresh = 60.0;
-            };
-            position = {
-              x = 0;
-              y = 0;
-            };
-            scale = 1.0;
-          };
-          "HDMI-A-1" = {
-            mode = {
-              width = 2560;
-              height = 2880;
-              refresh = 60.0;
-            };
-            position = {
-              x = 2560;
-              y = 30;
-            };
-            scale = 1.0;
-          };
-        };
 
         input = {
           keyboard.xkb = {
@@ -191,6 +171,63 @@
           honor-xdg-activation-with-invalid-serial = true;
         };
       };
+    in
+    {
+      packages.myNiri = inputs.wrapper-modules.wrappers.niri.wrap {
+        inherit pkgs;
+        settings = commonSettings;
+      };
+
+      packages.myNiriCharizard = inputs.wrapper-modules.wrappers.niri.wrap {
+        inherit pkgs;
+        settings = commonSettings // {
+          outputs = {
+            "DP-1" = {
+              mode = {
+                width = 2560;
+                height = 1440;
+                refresh = 60.0;
+              };
+              position = {
+                x = 0;
+                y = 0;
+              };
+              scale = 1.0;
+            };
+            "HDMI-A-1" = {
+              mode = {
+                width = 2560;
+                height = 2880;
+                refresh = 60.0;
+              };
+              position = {
+                x = 2560;
+                y = 30;
+              };
+              scale = 1.0;
+            };
+          };
+        };
+      };
+
+      packages.myNiriMew = inputs.wrapper-modules.wrappers.niri.wrap {
+        inherit pkgs;
+        settings = commonSettings // {
+          outputs = {
+            "eDP-1" = {
+              mode = {
+                width = 2256;
+                height = 1504;
+                refresh = 60.0;
+              };
+              position = {
+                x = 0;
+                y = 0;
+              };
+              scale = 1.5;
+            };
+          };
+        };
+      };
     };
-  };
 }
