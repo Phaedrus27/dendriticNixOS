@@ -3,10 +3,33 @@
 
     users.groups.media = {};
 
-    users.users.sonarr.extraGroups = [ "media" ];
-    users.users.radarr.extraGroups = [ "media" ];
-    users.users.prowlarr.extraGroups = [ "media" ];
-    users.users.bazarr.extraGroups = [ "media" ];
+    users.groups.prowlarr = {};
+    users.users.prowlarr = {
+      isSystemUser = true;
+      group = "prowlarr";
+      extraGroups = [ "media" ];
+    };
+
+    users.groups.sonarr = {};
+    users.users.sonarr = {
+      isSystemUser = true;
+      group = "sonarr";
+      extraGroups = [ "media" ];
+    };
+
+    users.groups.radarr = {};
+    users.users.radarr = {
+      isSystemUser = true;
+      group = "radarr";
+      extraGroups = [ "media" ];
+    };
+
+    users.groups.bazarr = {};
+    users.users.bazarr = {
+      isSystemUser = true;
+      group = "bazarr";
+      extraGroups = [ "media" ];
+    };
 
     services.prowlarr = {
       enable = true;
