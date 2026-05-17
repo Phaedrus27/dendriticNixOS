@@ -4,10 +4,11 @@
     imports = [
       # Include the results of the hardware scan.
       self.nixosModules.mewHardware
-      self.nixosModules.environment
+      self.nixosModules.mewNiri
       self.nixosModules.tailscale
       self.nixosModules.syncthing
       self.nixosModules.obsidian
+      self.nixosModules.environment
       ];
 
     # Bootloader.

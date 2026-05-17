@@ -2,7 +2,7 @@
 
   flake.nixosModules.charizardConfiguration = { pkgs, lib, ... }: {
   	imports = [
-      self.nixosModules.environment
+      self.nixosModules.charizardNiri
       self.nixosModules.gaming
   		self.nixosModules.charizardHardware
       self.nixosModules.yubikey
@@ -11,6 +11,7 @@
       self.nixosModules.obsidian
       self.nixosModules.chromium
       self.nixosModules.keychron
+      self.nixosModules.environment
     ];
 
     # Bootloader.
