@@ -131,7 +131,6 @@
           check_service radarr
           check_service prowlarr
           check_service qbittorrent
-          check_service flaresolverr
           check_service wg-vpn
         '';
       };

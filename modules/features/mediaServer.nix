@@ -7,7 +7,6 @@
       self.nixosModules.jellyfin
       self.nixosModules.caddy
       self.nixosModules.monitoring
-      self.nixosModules.flaresolverr
     ];
     services.dnsmasq = {
       enable = true;
