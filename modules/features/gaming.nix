@@ -26,11 +26,6 @@
 
     hardware.steam-hardware.enable = true;
 
-    hardware.amdgpu.amdvlk = {
-      enable = true;
-      support32Bit.enable = true;
-    };
-
     environment.systemPackages = with pkgs; [
       mangohud
       lutris
