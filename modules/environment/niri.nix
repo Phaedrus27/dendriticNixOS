@@ -180,73 +180,32 @@
 
       packages.myNiriCharizard = inputs.wrapper-modules.wrappers.niri.wrap {
         inherit pkgs;
-        v2-settings = true;
         settings = commonSettings // {
-          outputs = {
-            "DP-1" = {
-              mode = _: {
-                props = {
-                  width = 2560;
-                  height = 1440;
-                  refresh = 60.0;
-                };
-                content = {};
-              };
-              position = _: {
-                props = {
-                  x = 0;
-                  y = 0;
-                };
-                content = {};
-              };
-              scale = 1.0;
-            };
-            "HDMI-A-1" = {
-              mode = _: {
-                props = {
-                  width = 2560;
-                  height = 2880;
-                  refresh = 60.0;
-                };
-                content = {};
-              };
-              position = _: {
-                props = {
-                  x = 2560;
-                  y = 30;
-                };
-                content = {};
-              };
-              scale = 1.0;
-            };
-          };
+          extraConfig = ''
+            output "DP-1" {
+              mode 2560x1440@60
+              position x=0 y=0
+              scale 1.0
+            }
+            output "HDMI-A-1" {
+              mode 2560x2880@60
+              position x=2560 y=30
+              scale 1.0
+            }
+          '';
         };
       };
 
       packages.myNiriMew = inputs.wrapper-modules.wrappers.niri.wrap {
         inherit pkgs;
-        v2-settings = true;
         settings = commonSettings // {
-          outputs = {
-            "eDP-1" = {
-              mode = _: {
-                props = {
-                  width = 2256;
-                  height = 1504;
-                  refresh = 60.0;
-                };
-                content = {};
-              };
-              position = _: {
-                props = {
-                  x = 0;
-                  y = 0;
-                };
-                content = {};
-              };
-              scale = 1.5;
-            };
-          };
+          extraConfig = ''
+            output "eDP-1" {
+              mode 2256x1504@60
+              position x=0 y=0
+              scale 1.5
+            }
+          '';
         };
       };
     };
