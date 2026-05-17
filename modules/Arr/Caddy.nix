@@ -1,6 +1,5 @@
 { self, inputs, ... }: {
   flake.nixosModules.caddy = { config, lib, pkgs, ... }: {
-
     services.caddy = {
       enable = true;
       virtualHosts = {
@@ -39,9 +38,13 @@
             respond "squirtle is alive"
           '';
         };
+        "http://paperless.home" = {
+          extraConfig = ''
+            reverse_proxy localhost:28981
+          '';
+        };
       };
     };
-
     networking.firewall.allowedTCPPorts = [ 80 443 ];
   };
 }
