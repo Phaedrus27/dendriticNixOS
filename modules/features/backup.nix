@@ -14,7 +14,7 @@
           export RESTIC_PASSWORD=$(cat ${config.sops.secrets.restic_password.path})
           ${pkgs.restic}/bin/restic \
             -r sftp:phaedrus@100.117.81.78:/mnt/data/backups/squirtle \
-            --ssh-command "${pkgs.openssh}/bin/ssh -i /etc/ssh/backup_ed25519" \
+            -o sftp.command="${pkgs.openssh}/bin/ssh -i /etc/ssh/backup_ed25519 100.117.81.78 -s sftp" \
             backup \
             /mnt/cache/paperless \
             /mnt/storage/syncthing/obsidian \
