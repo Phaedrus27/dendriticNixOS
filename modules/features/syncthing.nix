@@ -29,7 +29,7 @@
         folders = {
           syncthing = {
             path = lib.mkMerge [
-              (lib.mkIf (config.networking.hostName == "squirtle") "/mnt/storage/syncthing")
+              (lib.mkIf (config.networking.hostName == "squirtle") "/mnt/cache/syncthing")
               (lib.mkIf (config.networking.hostName == "charizard") "/home/phaedrus/syncthing")
               (lib.mkIf (config.networking.hostName == "mew") "/home/phaedrus/syncthing")
             ];

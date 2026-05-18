@@ -20,9 +20,11 @@
       options = [ "defaults" "nofail" ];
     };
 
-    # mergerfs pool — cache first, then HDDs
+    # HDD-only MergerFS pool — SSD excluded
+    # mfs policy balances writes across both HDDs by free space
+    # SSD handles downloads separately via qBittorrent
     fileSystems."/mnt/storage" = {
-      device = "/mnt/cache:/mnt/disk1:/mnt/disk2";
+      device = "/mnt/disk1:/mnt/disk2";
       fsType = "fuse.mergerfs";
       options = [
         "defaults"
@@ -30,26 +32,35 @@
         "use_ino"
         "cache.files=off"
         "dropcacheonclose=true"
-        "category.create=ff"
+        "category.create=mfs"
         "moveonenospc=true"
         "nofail"
       ];
     };
 
+    # Pre-create required directories with correct ownership
+    systemd.tmpfiles.rules = [
+      "d /mnt/cache/downloads  0775 qbittorrent media -"
+      "d /mnt/cache/incomplete 0775 qbittorrent media -"
+      "d /mnt/storage/tv       0775 sonarr       media -"
+      "d /mnt/storage/movies   0775 radarr        media -"
+    ];
+
     # SnapRAID config
+    # Parity on disk1 is intentional — only 2 data drives currently.
+    # When a 3rd drive is added, move parity to a dedicated parity drive
+    # and add: data d3 /mnt/disk3
     environment.etc."snapraid.conf".text = ''
       parity /mnt/disk1/.snapraid.parity
-
       content /var/snapraid.content
       content /mnt/disk1/.snapraid.content
       content /mnt/disk2/.snapraid.content
-
       data d1 /mnt/disk1
       data d2 /mnt/disk2
-
       exclude *.tmp
       exclude *.bak
       exclude /tmp/
+      exclude /downloads/
     '';
 
     environment.systemPackages = with pkgs; [
@@ -57,40 +68,15 @@
       mergerfs
     ];
 
-    # Cache mover — moves cold files from cache to HDDs nightly
-    systemd.services.cache-mover = {
-      description = "Move cold files from cache to HDD pool";
-      serviceConfig = {
-        Type = "oneshot";
-        ExecStart = pkgs.writeShellScript "cache-mover" ''
-          find /mnt/cache -mindepth 1 -maxdepth 10 -type f \
-            ! -name ".snapraid*" \
-            -atime +7 \
-            | while IFS= read -r f; do
-              rel="''${f#/mnt/cache}"
-              dest="/mnt/disk1''${rel}"
-              mkdir -p "$(dirname "$dest")"
-              ${pkgs.rsync}/bin/rsync -a --remove-source-files "$f" "$dest" && \
-                find "$(dirname "$f")" -mindepth 1 -empty -delete
-            done
-        '';
-      };
-    };
-
-    systemd.timers.cache-mover = {
-      wantedBy = [ "timers.target" ];
-      timerConfig = {
-        OnCalendar = "daily";
-        Persistent = true;
-      };
-    };
-
-    # SnapRAID sync
+    # SnapRAID sync + scrub
     systemd.services.snapraid-sync = {
-      description = "SnapRAID sync";
+      description = "SnapRAID sync and scrub";
       serviceConfig = {
         Type = "oneshot";
-        ExecStart = "${pkgs.snapraid}/bin/snapraid sync";
+        ExecStart = pkgs.writeShellScript "snapraid-sync" ''
+          ${pkgs.snapraid}/bin/snapraid sync
+          ${pkgs.snapraid}/bin/snapraid scrub -p 10 -o 30
+        '';
       };
     };
 
@@ -101,5 +87,6 @@
         Persistent = true;
       };
     };
+
   };
 }
