@@ -9,7 +9,6 @@
       description = "Restic backup to charizard";
       serviceConfig = {
         Type = "oneshot";
-        User = "phaedrus";
         ExecStart = pkgs.writeShellScript "backup" ''
           export RESTIC_PASSWORD=$(cat ${config.sops.secrets.restic_password.path})
           ${pkgs.restic}/bin/restic \

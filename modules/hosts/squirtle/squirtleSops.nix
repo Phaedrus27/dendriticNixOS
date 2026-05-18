@@ -8,15 +8,11 @@
       secrets.protonvpn_pubkey = {};
       secrets.protonvpn_endpoint = {};
       secrets.protonvpn_address = {};
-      secrets.discord_webhook = {
-        owner = "phaedrus";
-      };
+      secrets.discord_webhook = {};
       secrets.paperless_admin_password = {
         owner = "paperless";
       };
-      secrets.restic_password = {
-        owner = "phaedrus";
-      };
+      secrets.restic_password = {};
     };
   };
 }
