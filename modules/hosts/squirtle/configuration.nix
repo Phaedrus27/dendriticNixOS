@@ -11,6 +11,7 @@
     self.nixosModules.mediaServer
     self.nixosModules.syncthing
     self.nixosModules.paperless
+    self.nixosModules.backup
   ];
 
   boot.loader.systemd-boot.enable = true;

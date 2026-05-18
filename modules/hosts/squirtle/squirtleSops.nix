@@ -12,6 +12,7 @@
       secrets.paperless_admin_password = {
         owner = "paperless";
       };
+      secrets.restic_password = {};
     };
   };
 }
