@@ -130,9 +130,9 @@
           "Mod+W".toggle-column-tabbed-display = {};
 
           # Screenshots
-          "Ctrl+Shift+agrave".screenshot = {};
-          "Ctrl+Shift+eacute".screenshot-screen = {};
-          "Ctrl+Shift+egrave".screenshot-window = {};
+          "Ctrl+Shift+1".screenshot = {};
+          "Ctrl+Shift+2".screenshot-screen = {};
+          "Ctrl+Shift+3".screenshot-window = {};
 
           # Escape / power
           "Mod+Escape".toggle-keyboard-shortcuts-inhibit = {};
@@ -141,19 +141,19 @@
           "Mod+O".toggle-overview = {};
 
           # Workspace switching — unshifted keys on AFNOR
-          "Mod+agrave".focus-workspace = "1";
-          "Mod+eacute".focus-workspace = "2";
-          "Mod+egrave".focus-workspace = "3";
-          "Mod+ecircumflex".focus-workspace = "4";
-          "Mod+parenleft".focus-workspace = "5";
-          "Mod+parenright".focus-workspace = "6";
+          "Mod+1".focus-workspace = "1";
+          "Mod+2".focus-workspace = "2";
+          "Mod+3".focus-workspace = "3";
+          "Mod+4".focus-workspace = "4";
+          "Mod+5".focus-workspace = "5";
+          "Mod+6".focus-workspace = "6";
 
-          "Mod+Ctrl+agrave".move-column-to-workspace = "1";
-          "Mod+Ctrl+eacute".move-column-to-workspace = "2";
-          "Mod+Ctrl+egrave".move-column-to-workspace = "3";
-          "Mod+Ctrl+ecircumflex".move-column-to-workspace = "4";
-          "Mod+Ctrl+parenleft".move-column-to-workspace = "5";
-          "Mod+Ctrl+parenright".move-column-to-workspace = "6";
+          "Mod+Ctrl+1".move-column-to-workspace = "1";
+          "Mod+Ctrl+2".move-column-to-workspace = "2";
+          "Mod+Ctrl+3".move-column-to-workspace = "3";
+          "Mod+Ctrl+4".move-column-to-workspace = "4";
+          "Mod+Ctrl+5".move-column-to-workspace = "5";
+          "Mod+Ctrl+6".move-column-to-workspace = "6";
         };
 
         layout = {

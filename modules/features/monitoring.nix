@@ -62,31 +62,6 @@
       };
     };
 
-    # Cache mover failure alert
-    systemd.services.cache-mover-monitor = {
-      description = "Alert on cache-mover failure";
-      after = [ "cache-mover.service" ];
-      serviceConfig = {
-        Type = "oneshot";
-        ExecStart = pkgs.writeShellScript "cache-mover-monitor" ''
-          WEBHOOK=$(cat ${config.sops.secrets.discord_webhook.path})
-          if ! ${pkgs.systemd}/bin/systemctl is-active --quiet cache-mover.service; then
-            STATUS=$(${pkgs.systemd}/bin/systemctl status cache-mover.service | ${pkgs.coreutils}/bin/tail -5)
-            ${pkgs.curl}/bin/curl -s -X POST "$WEBHOOK" \
-              -H "Content-Type: application/json" \
-              -d "{\"content\": \"🚨 **Cache Mover FAILED on squirtle**: The nightly cache mover did not complete successfully.\"}"
-          fi
-        '';
-      };
-    };
-    systemd.timers.cache-mover-monitor = {
-      wantedBy = [ "timers.target" ];
-      timerConfig = {
-        OnCalendar = "daily";
-        Persistent = true;
-      };
-    };
-
     # SnapRAID sync failure alert
     systemd.services.snapraid-monitor = {
       description = "Alert on snapraid-sync failure";

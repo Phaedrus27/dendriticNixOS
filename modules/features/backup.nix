@@ -31,7 +31,7 @@
     systemd.timers.backup = {
       wantedBy = [ "timers.target" ];
       timerConfig = {
-        OnCalendar = "daily";
+        OnCalendar = "manual";
         Persistent = true;
       };
     };
