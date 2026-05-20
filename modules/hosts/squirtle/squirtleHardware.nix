@@ -12,6 +12,11 @@
       fsType = "ext4";
     };
 
+    boot.kernel.sysctl = {
+      "net.core.rmem_max" = 7500000;
+      "net.core.wmem_max" = 7500000;
+    };
+
     fileSystems."/boot" = {
       device = "/dev/disk/by-uuid/2C74-D6A8";
       fsType = "vfat";
