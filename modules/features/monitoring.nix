@@ -63,28 +63,28 @@
     };
 
     # SnapRAID sync failure alert
-    systemd.services.snapraid-monitor = {
-      description = "Alert on snapraid-sync failure";
-      after = [ "snapraid-sync.service" ];
-      serviceConfig = {
-        Type = "oneshot";
-        ExecStart = pkgs.writeShellScript "snapraid-monitor" ''
-          WEBHOOK=$(cat ${config.sops.secrets.discord_webhook.path})
-          if ! ${pkgs.systemd}/bin/systemctl is-active --quiet snapraid-sync.service; then
-            ${pkgs.curl}/bin/curl -s -X POST "$WEBHOOK" \
-              -H "Content-Type: application/json" \
-              -d "{\"content\": \"🚨 **SnapRAID Sync FAILED on squirtle**: The daily SnapRAID sync did not complete successfully.\"}"
-          fi
-        '';
-      };
-    };
-    systemd.timers.snapraid-monitor = {
-      wantedBy = [ "timers.target" ];
-      timerConfig = {
-        OnCalendar = "daily";
-        Persistent = true;
-      };
-    };
+    #systemd.services.snapraid-monitor = {
+      #description = "Alert on snapraid-sync failure";
+      #after = [ "snapraid-sync.service" ];
+      #serviceConfig = {
+        #Type = "oneshot";
+        #ExecStart = pkgs.writeShellScript "snapraid-monitor" ''
+          #WEBHOOK=$(cat ${config.sops.secrets.discord_webhook.path})
+          #if ! ${pkgs.systemd}/bin/systemctl is-active --quiet snapraid-sync.service; then
+            #${pkgs.curl}/bin/curl -s -X POST "$WEBHOOK" \
+              #-H "Content-Type: application/json" \
+              #-d "{\"content\": \"🚨 **SnapRAID Sync FAILED on squirtle**: The daily SnapRAID sync did not complete successfully.\"}"
+          #fi
+        #'';
+      #};
+    #};
+    #systemd.timers.snapraid-monitor = {
+      #wantedBy = [ "timers.target" ];
+      #timerConfig = {
+        #OnCalendar = "daily";
+        #Persistent = true;
+      #};
+    #};
 
     # Service crash alerts
     systemd.services.service-monitor = {

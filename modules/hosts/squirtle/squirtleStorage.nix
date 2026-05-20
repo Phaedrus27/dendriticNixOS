@@ -1,25 +1,21 @@
 { self, inputs, ... }: {
   flake.nixosModules.squirtleStorage = { lib, pkgs, ... }: {
-
     # Mount individual drives
     fileSystems."/mnt/disk1" = {
       device = "/dev/disk/by-uuid/e7be5a5a-3e5c-4227-8016-5655781c4db1";
       fsType = "btrfs";
       options = [ "defaults" "nofail" ];
     };
-
     fileSystems."/mnt/disk2" = {
       device = "/dev/disk/by-uuid/ad12db81-67fe-45d5-91af-7378c47327f3";
       fsType = "btrfs";
       options = [ "defaults" "nofail" ];
     };
-
     fileSystems."/mnt/cache" = {
       device = "/dev/disk/by-uuid/f72e39fa-3225-4c84-987e-40f44fe7f8bf";
       fsType = "btrfs";
       options = [ "defaults" "nofail" ];
     };
-
     # HDD-only MergerFS pool — SSD excluded
     # mfs policy balances writes across both HDDs by free space
     # SSD handles downloads separately via qBittorrent
@@ -37,7 +33,6 @@
         "nofail"
       ];
     };
-
     # Pre-create required directories with correct ownership
     systemd.tmpfiles.rules = [
       "d /mnt/cache/downloads  0775 qbittorrent media -"
@@ -45,7 +40,6 @@
       "d /mnt/storage/tv       0775 sonarr       media -"
       "d /mnt/storage/movies   0775 radarr        media -"
     ];
-
     # SnapRAID config
     # Parity on disk1 is intentional — only 2 data drives currently.
     # When a 3rd drive is added, move parity to a dedicated parity drive
@@ -62,13 +56,11 @@
       exclude /tmp/
       exclude /downloads/
     '';
-
     environment.systemPackages = with pkgs; [
       snapraid
       mergerfs
     ];
-
-    # SnapRAID sync + scrub
+    # SnapRAID sync + scrub — disabled until dedicated parity drive is added
     systemd.services.snapraid-sync = {
       description = "SnapRAID sync and scrub";
       serviceConfig = {
@@ -79,14 +71,11 @@
         '';
       };
     };
-
     systemd.timers.snapraid-sync = {
-      wantedBy = [ "timers.target" ];
       timerConfig = {
         OnCalendar = "daily";
         Persistent = true;
       };
     };
-
   };
 }
