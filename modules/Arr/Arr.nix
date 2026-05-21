@@ -49,5 +49,6 @@
       enable = true;
       openFirewall = false;
     };
+    environment.systemPackages = with pkgs; [ unrar ];
   };
 }
