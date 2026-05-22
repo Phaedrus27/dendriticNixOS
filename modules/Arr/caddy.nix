@@ -42,9 +42,11 @@
           extraConfig = ''
             reverse_proxy localhost:28981
           '';
-          "http://seerr.home".extraConfig = ''
-        reverse_proxy localhost:5055
-      '';
+        };
+        "http://seerr.home" = {
+          extraConfig = ''
+            reverse_proxy localhost:5055
+          '';
         };
       };
     };
