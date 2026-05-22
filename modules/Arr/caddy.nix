@@ -43,11 +43,6 @@
             reverse_proxy localhost:28981
           '';
         };
-        "http://seerr.home" = {
-          extraConfig = ''
-            reverse_proxy localhost:5055
-          '';
-        };
       };
     };
     networking.firewall.allowedTCPPorts = [ 80 443 ];
