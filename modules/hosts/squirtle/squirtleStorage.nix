@@ -30,8 +30,8 @@
         "dropcacheonclose=true"
         "category.create=mfs"
         "moveonenospc=true"
-        "nofail"
       ];
+      noCheck = true;
     };
     # Pre-create required directories with correct ownership
     systemd.tmpfiles.rules = [
