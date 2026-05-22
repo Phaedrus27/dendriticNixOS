@@ -8,6 +8,7 @@
       self.nixosModules.caddy
       self.nixosModules.monitoring
     ];
+
     services.dnsmasq = {
       enable = true;
       settings = {
@@ -26,5 +27,10 @@
         ];
       };
     };
+
+    systemd.services.dnsmasq = {
+      after = [ "tailscaled.service" "network-online.target" ];
+      wants = [ "tailscaled.service" "network-online.target" ];
+    };
   };
-} 
+}
