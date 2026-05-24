@@ -5,7 +5,7 @@
       # Include the results of the hardware scan.
       self.nixosModules.mewHardware
       self.nixosModules.mewNiri
-      # self.nixosModules.tailscale
+      self.nixosModules.tailscale
       self.nixosModules.syncthing
       self.nixosModules.obsidian
       self.nixosModules.environment
@@ -129,6 +129,14 @@
     #   enable = true;
     #   enableSSHSupport = true;
     # };
+
+    services.openssh = {
+      enable = true;
+      settings = {
+        PasswordAuthentication = false;
+        PermitRootLogin = "no";
+      };
+    };
 
     # List services that you want to enable:
 
