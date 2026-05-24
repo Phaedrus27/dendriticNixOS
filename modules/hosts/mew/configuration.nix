@@ -52,6 +52,9 @@
       variant = "afnor";
     };
 
+    # Required for FIDO2 LUKS unlock at boot
+    boot.initrd.systemd.enable = true;
+
     # Configure console keymap
     console.keyMap = "fr";
 
