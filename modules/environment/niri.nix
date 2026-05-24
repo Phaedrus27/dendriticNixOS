@@ -158,10 +158,10 @@
 
         layout = {
           focus-ring.off = {};
-          gaps = 16;
+          gaps = 8;
           struts = {
-            top = 16;
-            bottom = 16;
+            top = 8;
+            bottom = 8;
             left = 4;
             right = 4;
           };
