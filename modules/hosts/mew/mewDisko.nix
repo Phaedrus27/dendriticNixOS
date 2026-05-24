@@ -1,5 +1,5 @@
-{ self, inputs, ... }: {
-  flake.nixosModules.mewDisko = { ... }: {
+{ self, inputs, lib, ... }: {
+  flake.nixosModules.mewDisko = { lib, ... }: {
     imports = [ inputs.disko.nixosModules.disko ];
 
     disko.devices = {
@@ -40,5 +40,8 @@
 
     # Required for FIDO2 unlock at boot
     boot.initrd.systemd.enable = true;
+
+    # Force legacy LUKS initrd config to empty — systemd initrd handles LUKS instead
+    boot.initrd.luks.devices = lib.mkForce {};
   };
 }
