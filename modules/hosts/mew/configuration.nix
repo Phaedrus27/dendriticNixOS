@@ -9,14 +9,22 @@
       self.nixosModules.syncthing
       self.nixosModules.obsidian
       self.nixosModules.environment
+      self.nixosModules.mewSecurity
       ];
 
     # Bootloader.
     boot.loader.systemd-boot.enable = true;
     boot.loader.efi.canTouchEfiVariables = true;
 
-    networking.hostName = "mew"; # Define your hostname.
-    # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+    networking = {
+      hostName = "mew";
+      interfaces.wlp1s0.ipv4.addresses = [{
+        address = "192.168.1.151";
+        prefixLength = 24;
+      }];
+      defaultGateway = "192.168.1.1";
+      nameservers = [ "1.1.1.1" "8.8.8.8" ];
+    };
 
     # Configure network proxy if necessary
     # networking.proxy.default = "http://user:password@proxy:port/";
