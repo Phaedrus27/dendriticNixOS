@@ -55,9 +55,6 @@
           "4" = {};
           "5" = {};
           "6" = {};
-          "secondary" = {
-            openOnOutput = "HDMI-A-1";
-          };
         };
 
         binds = {
@@ -194,6 +191,9 @@
               mode "2560x2880@60"
               position x=2560 y=0
               scale 1.25
+            }
+            workspace "secondary" {
+            open-on-output "HDMI-A-1"
             }
           '';
         };
