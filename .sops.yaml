@@ -1,5 +1,5 @@
 keys:
-  - &yubikey1 age1yubikey1qgtf7s67lehalvgcyfm40ks44sjdnmdgh35a7335run4khhp3ahpkxztacs
+  - &yubikey1 age1yubikey1qtkqf9lnj6clvyt4g7gyyavhyevdylk3pfqxckn7d5azdqj2hfyngkym037
   - &yubikey2 age1yubikey1qtvjaflu0lu329y43l562v2g2kcvgn3x0mpsuvc6v92xyf2c8yv327kdq00
   - &squirtle age1hjce6z08fe9f8tgn7cdh3ald0php42873rjhpfsu6gygg8n6hc8qnqn34f
 
