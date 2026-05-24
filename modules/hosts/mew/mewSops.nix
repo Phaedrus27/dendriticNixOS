@@ -2,6 +2,7 @@
   flake.nixosModules.mewSops = { pkgs, ... }: {
     sops = {
       defaultSopsFile = "${self}/secrets/secrets.yaml";
+      age.keyFile = "/var/lib/sops-nix/age-yubikey.txt";
       age.plugins = [ pkgs.age-plugin-yubikey ];
       secrets.tailscale_authkey = {};
       secrets.u2f_mappings = {
