@@ -1,4 +1,4 @@
-{ self, inputs, lib, ... }: {
+{ self, inputs, ... }: {
   flake.nixosModules.mewDisko = { lib, ... }: {
     imports = [ inputs.disko.nixosModules.disko ];
 
@@ -41,7 +41,13 @@
     # Required for FIDO2 unlock at boot
     boot.initrd.systemd.enable = true;
 
-    # Force legacy LUKS initrd config to empty — systemd initrd handles LUKS instead
-    boot.initrd.luks.devices = lib.mkForce {};
+    # Disable legacy FIDO2 support — systemd initrd handles it instead
+    boot.initrd.luks.fido2Support = false;
+
+    # Tell systemd-cryptsetup to try FIDO2 first, fall back to passphrase
+    boot.initrd.luks.devices."cryptroot" = {
+      device = "/dev/disk/by-partlabel/disk-main-luks";
+      crypttabExtraOpts = [ "fido2-device=auto" ];
+    };
   };
 }
