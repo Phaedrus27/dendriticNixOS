@@ -5,7 +5,7 @@
       # Include the results of the hardware scan.
       self.nixosModules.mewHardware
       self.nixosModules.mewNiri
-      #self.nixosModules.tailscale
+      self.nixosModules.tailscale
       self.nixosModules.syncthing
       self.nixosModules.obsidian
       self.nixosModules.environment

@@ -4,8 +4,8 @@
       self.nixosModules.yubikey
       self.nixosModules.fprintd
       self.nixosModules.mewDisko
-      #self.nixosModules.mewSops
-      #self.nixosModules.sops
+      self.nixosModules.mewSops
+      self.nixosModules.sops
     ];
 
     # PIV-backed SSH via OpenSC — private key never leaves the YubiKey hardware
