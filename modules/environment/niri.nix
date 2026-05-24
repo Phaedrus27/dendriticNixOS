@@ -55,6 +55,9 @@
           "4" = {};
           "5" = {};
           "6" = {};
+          "secondary" = {
+            openOnOutput = "HDMI-A-1";
+          };
         };
 
         binds = {

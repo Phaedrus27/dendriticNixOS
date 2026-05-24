@@ -39,6 +39,7 @@
       "d /mnt/cache/incomplete 0775 qbittorrent media -"
       "d /mnt/storage/tv       0775 sonarr       media -"
       "d /mnt/storage/movies   0775 radarr        media -"
+      "d /mnt/storage/backups 0775 phaedrus users -"
     ];
     # SnapRAID config
     # Parity on disk1 is intentional — only 2 data drives currently.
