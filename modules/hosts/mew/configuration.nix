@@ -41,8 +41,6 @@
     };
     services.blueman.enable = true;
 
-    services.logind.lidSwitch = "suspend";
-
     services.pulseaudio.enable = false;
     security.rtkit.enable = true;
     services.pipewire = {
