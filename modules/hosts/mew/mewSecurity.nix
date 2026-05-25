@@ -26,9 +26,9 @@
     '';
 
     # locks computer when closed
-    services.logind = {
-      lidSwitch = "suspend";
-      lidSwitchExternalPower = "suspend";
+    services.logind.settings.Login = {
+      HandleLidSwitch = "suspend";
+      HandleLidSwitchExternalPower = "suspend";
     };
   };
 }
