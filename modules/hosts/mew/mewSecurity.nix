@@ -27,8 +27,8 @@
 
     # locks computer when closed
     services.logind = {
-      lidSwitch = "lock";
-      lidSwitchExternalPower = "lock";
+      lidSwitch = "suspend";
+      lidSwitchExternalPower = "suspend";
     };
   };
 }
