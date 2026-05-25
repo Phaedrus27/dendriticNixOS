@@ -3,6 +3,7 @@
     imports = [
       self.nixosModules.nautilus
       self.nixosModules.niri
+      self.nixosModules.firefox
     ];
 
     environment.systemPackages = with pkgs; [
