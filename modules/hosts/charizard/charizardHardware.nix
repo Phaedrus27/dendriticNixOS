@@ -7,7 +7,13 @@
     boot.kernelModules = [ "kvm-amd" ];
     boot.extraModulePackages = [ ];
 
-    boot.initrd.luks.devices."luks-bb59877a-e6fb-443d-af1e-485147ca43f2".device = "/dev/disk/by-uuid/bb59877a-e6fb-443d-af1e-485147ca43f2";
+    # Required for FIDO2 LUKS unlock at boot
+    boot.initrd.systemd.enable = true;
+    boot.initrd.luks.fido2Support = false;
+    boot.initrd.luks.devices."luks-bb59877a-e6fb-443d-af1e-485147ca43f2" = {
+      device = "/dev/disk/by-uuid/bb59877a-e6fb-443d-af1e-485147ca43f2";
+      crypttabExtraOpts = [ "fido2-device=auto" ];
+    };
 
     fileSystems."/" = {
       device = "/dev/mapper/luks-bb59877a-e6fb-443d-af1e-485147ca43f2";
