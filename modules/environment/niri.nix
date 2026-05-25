@@ -203,11 +203,6 @@
         inherit pkgs;
         settings = commonSettings // {
           extraConfig = ''
-            switch-events {
-              lid close {
-                spawn "${lib.getExe self'.packages.myNoctalia}" "ipc" "call" "lockScreen"
-              }
-            }
             output "eDP-1" {
               mode "2256x1504@60"
               position x=0 y=0
