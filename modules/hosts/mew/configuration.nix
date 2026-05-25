@@ -12,9 +12,6 @@
     boot.loader.systemd-boot.enable = true;
     boot.loader.efi.canTouchEfiVariables = true;
 
-    # Required for wayland session file generation despite using niri/wayland
-    services.xserver.enable = true;
-
     networking = {
       hostName = "mew";
       interfaces.wlp1s0.ipv4.addresses = [{
