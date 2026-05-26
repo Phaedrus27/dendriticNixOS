@@ -26,17 +26,15 @@
     };
 
     # ── GPU tuning ───────────────────────────────────────────────────────────
-    programs.corectrl = {
-      enable = true;
-      gpuOverclock.enable = true;
-    };
+    programs.corectrl.enable = true;
+    hardware.amdgpu.overdrive.enable = true;
     users.users.phaedrus.extraGroups = [ "corectrl" ];
 
     # ── Game streaming (Sunshine host) ───────────────────────────────────────
     services.sunshine = {
       enable = true;
       autoStart = true;
-      capSysAdmin = true;    # required for KMS capture on Wayland/Niri
+      capSysAdmin = true;
       openFirewall = true;
     };
 
@@ -47,16 +45,14 @@
     # ── Packages ─────────────────────────────────────────────────────────────
     environment.systemPackages = with pkgs; [
       # Launchers
-      heroic             # GOG & Epic
-      lutris             # Battle.net, EA, legacy titles
-      bottles            # Windows app/game compatibility
+      heroic              # GOG & Epic
 
       # MangoHud & overlay
       mangohud
-      goverlay           # MangoHud GUI config
+      goverlay            # MangoHud GUI config
 
       # Vulkan
-      vkbasalt           # post-processing layer (sharpening, AA)
+      vkbasalt            # post-processing layer (sharpening, AA)
 
       # Monitoring & profiling
       lm_sensors
