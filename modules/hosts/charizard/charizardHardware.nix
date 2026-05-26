@@ -10,7 +10,7 @@
 
     boot.kernelParams = [
       "amd_pstate=active"                  # EPP-based freq scaling (Zen 5)
-      "amdgpu.ppfeaturemask=0xffffffff"    # unlock GPU OC/UV/fan controls
+      "amdgpu.ppfeaturemask=0xffffffff"    # unlock GPU OC/UV controls
     ];
 
     # Required for FIDO2 LUKS unlock at boot
@@ -43,33 +43,9 @@
     nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
     hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 
-    # ── CPU power & frequency scaling ────────────────────────────────────────
-    powerManagement.cpuFreqGovernor = "schedutil";
-
-    systemd.services.amd-epp = {
-      description = "Set AMD Energy Performance Preference";
-      wantedBy = [ "multi-user.target" ];
-      after = [ "cpufreq.service" ];
-      requires = [ "cpufreq.service" ];
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-        ExecStart = pkgs.writeShellScript "set-epp" ''
-          for cpu in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
-            echo balance_performance > "$cpu" || true
-          done
-        '';
-      };
-    };
-
-    # ── GPU (CoreCtrl) ───────────────────────────────────────────────────────
-    programs.corectrl.enable = true;
-    hardware.amdgpu.overdrive.enable = true;
-    users.users.phaedrus.extraGroups = [ "corectrl" ];
-
-    # ── Monitoring & tuning packages ─────────────────────────────────────────
+    # ── Monitoring packages ──────────────────────────────────────────────────
     environment.systemPackages = with pkgs; [
-      lm_sensors          # sensors-detect, pwmconfig, fancontrol
+      lm_sensors          # sensors / temp readouts
       nvtopPackages.amd   # real-time GPU + CPU monitor
       stress-ng           # stability testing
       s-tui               # TUI stress test + live temp/freq view
