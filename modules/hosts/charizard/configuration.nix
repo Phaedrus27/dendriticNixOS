@@ -10,6 +10,7 @@
       self.nixosModules.chromium
       self.nixosModules.keychron
       self.nixosModules.environment
+      self.nixosModules.tailscale
     ];
 
     boot.loader.systemd-boot.enable = true;
