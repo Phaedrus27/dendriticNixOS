@@ -2,10 +2,10 @@
   flake.nixosModules.tailscale = { lib, pkgs, config, ... }: {
     services.tailscale = {
       enable = true;
-      # Default to client — hosts that act as subnet routers override this to "server"
       useRoutingFeatures = lib.mkDefault "client";
-      # Only set authKeyFile if the secret is declared — allows install without SOPS configured
-      authKeyFile = lib.mkIf (config.sops.secrets ? tailscale_authkey)
+      # authKeyFile only set if the host declares the secret — headless hosts like squirtle
+      # use this for unattended auth. Interactive hosts authenticate manually with tailscale up.
+      authKeyFile = lib.mkIf (config.sops ? secrets && config.sops.secrets ? tailscale_authkey)
         config.sops.secrets.tailscale_authkey.path;
     };
 
