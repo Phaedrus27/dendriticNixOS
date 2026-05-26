@@ -17,8 +17,8 @@
             addresses = [ "tcp://100.117.81.78:22000" ];
           };
           mew = { 
-            id = "KUQH443-3JDU2W2-FOB4VDW-6SE2YNF-LT5GVSM-GHXWO4P-SCWRB5Y-53SBLQ3";
-            addresses = [ "tcp://100.121.56.115:22000" ];
+            id = "BA6TEFV-CZCEQYZ-HIPS6W3-BFB53FN-B2MBT2K-LAVPEW4-4CISR2V-IXLCUQA";
+            addresses = [ "tcp://100.122.227.20:22000" ];
           };
           phone = { 
             id = "ND3MRVS-YYZLSRP-CDNPNQU-YGE2UN4-HGQQEVR-SQY35VL-LL445N3-A6KJ6QQ";
