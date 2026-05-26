@@ -1,6 +1,6 @@
 { self, inputs, ... }: {
 
-  flake.nixosModules.squirtleConfiguration = { pkgs, lib, ... }: {
+  flake.nixosModules.squirtleConfiguration = { pkgs, lib, config, ... }: {
     imports = [
     self.nixosModules.squirtleHardware
     self.nixosModules.squirtleStorage
