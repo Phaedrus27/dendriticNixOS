@@ -4,6 +4,16 @@
       enable = true;
       package = lib.mkDefault self.packages.${pkgs.stdenv.hostPlatform.system}.myNiri;
     };
+
+    systemd.user.services.noctalia-resume = {
+      description = "Restart noctalia after resume from suspend";
+      after = [ "suspend.target" "hibernate.target" "hybrid-sleep.target" ];
+      wantedBy = [ "suspend.target" "hibernate.target" "hybrid-sleep.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = "${pkgs.bash}/bin/bash -c 'sleep 2 && pkill -f noctalia-shell; sleep 1 && ${lib.getExe self.packages.${pkgs.stdenv.hostPlatform.system}.myNoctalia} &'";
+      };
+    };
   };
 
   flake.nixosModules.charizardNiri = { pkgs, lib, ... }: {
@@ -130,7 +140,6 @@
           "Ctrl+Alt+Delete".quit = {};
           "Mod+Shift+P".power-off-monitors = {};
           "Mod+O".toggle-overview = {};
-
         };
 
         layout = {
