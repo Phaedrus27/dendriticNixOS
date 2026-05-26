@@ -86,8 +86,8 @@
     users.users.phaedrus.extraGroups = [ "corectrl" ];
 
     # ── Fan control ──────────────────────────────────────────────────────────
-    services.fancontrol = {
-      enable = true;
+    #services.fancontrol = {
+      #enable = true;
       # Populate after running: sudo sensors-detect --auto && sudo pwmconfig
       # config = ''
       #   INTERVAL=10
@@ -96,7 +96,7 @@
       #   MINTEMP=...
       #   MAXTEMP=...
       # '';
-    };
+    #};
 
     # ── Monitoring & tuning packages ─────────────────────────────────────────
     environment.systemPackages = with pkgs; [
