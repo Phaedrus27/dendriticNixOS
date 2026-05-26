@@ -43,12 +43,5 @@
     nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
     hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 
-    # ── Monitoring packages ──────────────────────────────────────────────────
-    environment.systemPackages = with pkgs; [
-      lm_sensors          # sensors / temp readouts
-      nvtopPackages.amd   # real-time GPU + CPU monitor
-      stress-ng           # stability testing
-      s-tui               # TUI stress test + live temp/freq view
-    ];
   };
 }
