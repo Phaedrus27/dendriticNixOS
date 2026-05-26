@@ -1,19 +1,27 @@
 { self, inputs, ... }: {
   flake.nixosModules.tailscale = { lib, pkgs, config, ... }: {
-    services.tailscale = {
-      enable = true;
-      useRoutingFeatures = lib.mkDefault "client";
-      # authKeyFile only set if the host declares the secret — headless hosts like squirtle
-      # use this for unattended auth. Interactive hosts authenticate manually with tailscale up.
-      authKeyFile = lib.mkIf (config.sops ? secrets && config.sops.secrets ? tailscale_authkey)
-        config.sops.secrets.tailscale_authkey.path;
+
+    options.dendriticNixOS.tailscale.authKeyFile = lib.mkOption {
+      type = lib.types.nullOr lib.types.path;
+      default = null;
+      description = "Path to Tailscale auth key file. If null, authenticate manually with tailscale up.";
     };
 
-    networking.firewall = {
-      trustedInterfaces = [ "tailscale0" ];
-      allowedUDPPorts = [ config.services.tailscale.port ];
-    };
+    config = {
+      services.tailscale = {
+        enable = true;
+        useRoutingFeatures = lib.mkDefault "client";
+        authKeyFile = lib.mkIf 
+          (config.dendriticNixOS.tailscale.authKeyFile != null)
+          config.dendriticNixOS.tailscale.authKeyFile;
+      };
 
-    environment.systemPackages = [ pkgs.tailscale ];
+      networking.firewall = {
+        trustedInterfaces = [ "tailscale0" ];
+        allowedUDPPorts = [ config.services.tailscale.port ];
+      };
+
+      environment.systemPackages = [ pkgs.tailscale ];
+    };
   };
 }

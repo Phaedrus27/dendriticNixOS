@@ -38,6 +38,8 @@
       firewall.enable = true;
     };
 
+  dendriticNixOS.tailscale.authKeyFile = config.sops.secrets.tailscale_authkey.path;
+
   systemd.services.ethtool-udp-gro = {
   description = "Enable UDP GRO forwarding on enp3s0";
   after = [ "network.target" ];
