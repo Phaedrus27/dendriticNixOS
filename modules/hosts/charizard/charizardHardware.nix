@@ -9,7 +9,7 @@
     boot.extraModulePackages = [ ];
 
     boot.kernelParams = [
-      "amd_pstate=active"                  # EPP-based freq scaling (Zen 3+)
+      "amd_pstate=active"                  # EPP-based freq scaling (Zen 5)
       "amdgpu.ppfeaturemask=0xffffffff"    # unlock GPU OC/UV/fan controls
     ];
 
@@ -49,62 +49,30 @@
     systemd.services.amd-epp = {
       description = "Set AMD Energy Performance Preference";
       wantedBy = [ "multi-user.target" ];
-      after = [ "multi-user.target" ];
+      after = [ "cpufreq.service" ];
+      requires = [ "cpufreq.service" ];
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
         ExecStart = pkgs.writeShellScript "set-epp" ''
           for cpu in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
-            echo balance_performance > "$cpu"
+            echo balance_performance > "$cpu" || true
           done
         '';
       };
     };
 
-    systemd.services.ryzenadj = {
-      description = "Apply RyzenAdj CPU power limits";
-      wantedBy = [ "multi-user.target" ];
-      after = [ "multi-user.target" ];
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-        ExecStart = pkgs.writeShellScript "ryzenadj-apply" ''
-          ${pkgs.ryzenadj}/bin/ryzenadj \
-            --stapm-limit=65000 \
-            --fast-limit=75000 \
-            --slow-limit=65000 \
-            --tctl-temp=85
-        '';
-      };
-    };
-
     # ── GPU (CoreCtrl) ───────────────────────────────────────────────────────
-    programs.corectrl = {
-      enable = true;
-      gpuOverclock.enable = true;
-    };
+    programs.corectrl.enable = true;
+    hardware.amdgpu.overdrive.enable = true;
     users.users.phaedrus.extraGroups = [ "corectrl" ];
-
-    # ── Fan control ──────────────────────────────────────────────────────────
-    #services.fancontrol = {
-      #enable = true;
-      # Populate after running: sudo sensors-detect --auto && sudo pwmconfig
-      # config = ''
-      #   INTERVAL=10
-      #   DEVPATH=...
-      #   FCTEMPS=...
-      #   MINTEMP=...
-      #   MAXTEMP=...
-      # '';
-    #};
 
     # ── Monitoring & tuning packages ─────────────────────────────────────────
     environment.systemPackages = with pkgs; [
-      lm_sensors        # sensors-detect, pwmconfig, fancontrol
-      ryzenadj          # CPU power limit tuning
-      nvtopPackages.amd # real-time GPU + CPU monitor
-      stress-ng         # stability testing
-      s-tui             # TUI stress test + live temp/freq view
+      lm_sensors          # sensors-detect, pwmconfig, fancontrol
+      nvtopPackages.amd   # real-time GPU + CPU monitor
+      stress-ng           # stability testing
+      s-tui               # TUI stress test + live temp/freq view
     ];
   };
 }
