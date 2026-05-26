@@ -48,15 +48,6 @@
           }
         ];
 
-        workspaces = {
-          "1" = {};
-          "2" = {};
-          "3" = {};
-          "4" = {};
-          "5" = {};
-          "6" = {};
-        };
-
         binds = {
           # Hotkey overlay
           "Mod+Shift+Escape".show-hotkey-overlay = {};
@@ -140,20 +131,6 @@
           "Mod+Shift+P".power-off-monitors = {};
           "Mod+O".toggle-overview = {};
 
-          # Workspace switching — unshifted keys on AFNOR
-          "Mod+1".focus-workspace = "1";
-          "Mod+2".focus-workspace = "2";
-          "Mod+3".focus-workspace = "3";
-          "Mod+4".focus-workspace = "4";
-          "Mod+5".focus-workspace = "5";
-          "Mod+6".focus-workspace = "6";
-
-          "Mod+Ctrl+1".move-column-to-workspace = "1";
-          "Mod+Ctrl+2".move-column-to-workspace = "2";
-          "Mod+Ctrl+3".move-column-to-workspace = "3";
-          "Mod+Ctrl+4".move-column-to-workspace = "4";
-          "Mod+Ctrl+5".move-column-to-workspace = "5";
-          "Mod+Ctrl+6".move-column-to-workspace = "6";
         };
 
         layout = {
@@ -191,9 +168,6 @@
               mode "2560x2880@60"
               position x=2560 y=0
               scale 1.25
-            }
-            workspace "secondary" {
-            open-on-output "HDMI-A-1"
             }
           '';
         };

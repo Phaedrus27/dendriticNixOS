@@ -7,6 +7,7 @@
       self.nixosModules.syncthing
       self.nixosModules.obsidian
       self.nixosModules.environment
+      self.nixosModules.tailscale
     ];
 
     boot.loader.systemd-boot.enable = true;
