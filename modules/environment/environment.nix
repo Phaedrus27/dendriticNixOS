@@ -4,6 +4,7 @@
       self.nixosModules.nautilus
       self.nixosModules.niri
       self.nixosModules.firefox
+      self.nixosModules.screenshot
     ];
 
     environment.systemPackages = with pkgs; [

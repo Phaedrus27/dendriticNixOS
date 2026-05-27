@@ -121,9 +121,8 @@
           "Mod+W".toggle-column-tabbed-display = {};
 
           # Screenshots
-          "Ctrl+Shift+1".screenshot = {};
-          "Ctrl+Shift+2".screenshot-screen = {};
-          "Ctrl+Shift+3".screenshot-window = {};
+          "Mod+S".spawn-sh = "screenshot-full";
+          "Mod+Shift+S".spawn-sh = "screenshot-region";
 
           # Escape / power
           "Mod+Escape".toggle-keyboard-shortcuts-inhibit = {};
