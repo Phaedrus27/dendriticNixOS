@@ -34,7 +34,16 @@
 
     services.tuned.enable = true;
     services.upower.enable = true;
-    services.printing.enable = true;
+    services.printing = {
+      enable = true;
+      drivers = with pkgs; [
+        gutenprint        # generic, covers many printers
+        hplip             # HP printers
+        brlaser           # Brother laser printers
+        epson-escpr       # Epson
+        samsung-unified-linux-driver  # Samsung
+      ];
+    };
 
     hardware.bluetooth = {
       enable = true;

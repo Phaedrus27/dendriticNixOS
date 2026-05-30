@@ -18,7 +18,7 @@
 
     networking = {
       hostName = "charizard";
-      interfaces.wlp1s0.ipv4.addresses = [{
+      interfaces.enp7s0.ipv4.addresses = [{
         address = "192.168.1.6";
         prefixLength = 24;
       }];
@@ -38,7 +38,22 @@
     services.libinput.enable = true;
     services.tuned.enable = true;
     services.upower.enable = true;
-    services.printing.enable = true;
+    services.printing = {
+      enable = true;
+      drivers = with pkgs; [
+        gutenprint        # generic, covers many printers
+        hplip             # HP printers
+        brlaser           # Brother laser printers
+        epson-escpr       # Epson
+        samsung-unified-linux-driver  # Samsung
+      ];
+    };
+
+    services.avahi = {
+      enable = true;
+      nssmdns4 = true;
+      openFirewall = true;
+    };
 
     services.pulseaudio.enable = false;
     security.rtkit.enable = true;
