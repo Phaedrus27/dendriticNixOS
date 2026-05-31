@@ -1,6 +1,9 @@
 { self, inputs, ... }: {
   flake.nixosModules.mewHardware = { config, lib, pkgs, modulesPath, ... }: {
-    imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
+    imports = [
+      (modulesPath + "/installer/scan/not-detected.nix")
+      inputs.nixos-hardware.nixosModules.framework-13-7040-amd
+    ];
 
     boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "thunderbolt" "usb_storage" "sd_mod" "usbhid" "hid_generic" ];
     boot.initrd.kernelModules = [ ];

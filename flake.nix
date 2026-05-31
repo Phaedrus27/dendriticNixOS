@@ -18,6 +18,10 @@
     # Declarative disk partitioning
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs"; # avoid duplicate nixpkgs in lockfile
+    
+    # Hardware-specific NixOS modules (Framework 13 AMD profile for mew)
+    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
+    
   };
 
   outputs = inputs: inputs.flake-parts.lib.mkFlake
