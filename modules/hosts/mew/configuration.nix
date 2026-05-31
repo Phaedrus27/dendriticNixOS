@@ -33,7 +33,7 @@
     };
     console.keyMap = "fr";
 
-    services.tuned.enable = true;
+    # services.tuned.enable = true;
     services.upower.enable = true;
     services.printing = {
       enable = true;
