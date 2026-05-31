@@ -12,6 +12,7 @@
     self.nixosModules.syncthing
     self.nixosModules.paperless
     self.nixosModules.backup
+    self.nixosModules.base
   ];
 
   boot.loader.systemd-boot.enable = true;
