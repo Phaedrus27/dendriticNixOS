@@ -19,6 +19,15 @@
       commonSettings = {
         spawn-at-startup = [
           (lib.getExe self'.packages.myNoctalia)
+          # Lock before the system sleeps. Run as a niri child so it inherits
+          # the Wayland session, takes a logind sleep inhibitor, and runs the
+          # proven lock IPC; -w waits so the lock paints before suspend.
+          [
+            (lib.getExe pkgs.swayidle)
+            "-w"
+            "before-sleep"
+            "${lib.getExe self'.packages.myNoctalia} ipc call lockScreen lock"
+          ]
         ];
 
         xwayland-satellite.path = lib.getExe pkgs.xwayland-satellite;
