@@ -15,7 +15,10 @@
       settings = {
         server = [ "192.168.1.1" ];
         listen-address = [ "127.0.0.1" "100.85.58.101" ];
-        bind-interfaces = true;
+        # bind-dynamic instead of bind-interfaces: binds listen-addresses
+        # as their interfaces appear, so dnsmasq no longer dies at boot
+        # when tailscale0 isn't up yet.
+        bind-dynamic = true;
         address = [
           "/radarr.home/100.85.58.101"
           "/sonarr.home/100.85.58.101"
