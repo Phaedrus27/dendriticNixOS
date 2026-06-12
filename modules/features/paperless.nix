@@ -15,6 +15,8 @@
       };
 
       passwordFile = config.sops.secrets.paperless_admin_password.path;
+
+      sops.secrets.paperless_admin_password = { owner = "paperless"; };
     };
 
   };

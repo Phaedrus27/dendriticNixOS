@@ -3,7 +3,12 @@
 
     environment.systemPackages = [ pkgs.restic ];
 
-    sops.secrets.restic_password = {};
+    # Secrets this module consumes — declared here so the module is
+    # self-contained: any host importing it needs these keys in its own
+    # defaultSopsFile. (discord_webhook is also declared by monitoring;
+    # identical declarations merge to one secret.)
+    sops.secrets.restic_password = { };
+    sops.secrets.discord_webhook = { };
 
     # Nightly local backup to HDD array
     systemd.services.backup = {

@@ -39,6 +39,7 @@
       firewall.enable = true;
     };
 
+  sops.secrets.tailscale_authkey = { };
   dendriticNixOS.tailscale.authKeyFile = config.sops.secrets.tailscale_authkey.path;
 
   systemd.services.ethtool-udp-gro = {
