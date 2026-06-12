@@ -50,5 +50,7 @@
       openFirewall = false;
     };
     environment.systemPackages = with pkgs; [ unrar ];
+
+    dendriticNixOS.monitoring.watchedServices = [ "sonarr" "radarr" "prowlarr" ];
   };
 }

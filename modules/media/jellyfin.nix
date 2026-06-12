@@ -19,5 +19,6 @@
       ];
     };
 
+    dendriticNixOS.monitoring.watchedServices = [ "jellyfin" ];
   };
 }

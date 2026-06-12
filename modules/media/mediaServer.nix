@@ -34,5 +34,7 @@
       after = [ "tailscaled.service" "network-online.target" ];
       wants = [ "tailscaled.service" "network-online.target" ];
     };
+
+    dendriticNixOS.monitoring.watchedServices = [ "dnsmasq" ];
   };
 }
