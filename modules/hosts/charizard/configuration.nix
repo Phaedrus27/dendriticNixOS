@@ -2,14 +2,14 @@
   flake.nixosModules.charizardConfiguration = { pkgs, lib, ... }: {
     imports = [
       self.nixosModules.charizardHardware
-      self.nixosModules.charizardNiri
+      self.nixosModules.workstation
       self.nixosModules.charizardSecurity
       self.nixosModules.gaming
       self.nixosModules.syncthing
       self.nixosModules.obsidian
       self.nixosModules.chromium
       self.nixosModules.keychron
-      self.nixosModules.environment
+      self.nixosModules.niriSession
       self.nixosModules.tailscale
       self.nixosModules.base
     ];
@@ -71,8 +71,6 @@
       extraGroups = [ "networkmanager" "wheel" ];
     };
 
-    nixpkgs.config.allowUnfree = true;
-
     environment.systemPackages = with pkgs; [
       git
       vscodium
@@ -81,13 +79,7 @@
       pywalfox-native
     ];
 
-    services.openssh = {
-      enable = true;
-      settings = {
-        PasswordAuthentication = false;
-        PermitRootLogin = "no";
-      };
-    };
+    services.openssh.enable = true;
 
     system.stateVersion = "25.11";
   };

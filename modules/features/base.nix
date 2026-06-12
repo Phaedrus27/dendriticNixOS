@@ -1,14 +1,32 @@
 { ... }: {
   flake.nixosModules.base = { ... }: {
+    # ── Firmware & memory ─────────────────────────────────────────────
     services.fwupd.enable = true;
     zramSwap.enable = true;
 
+    # ── Nix itself ────────────────────────────────────────────────────
+    # Declared system-wide so fresh installs work day one,
+    # instead of riding an imperative ~/.config/nix/nix.conf.
+    nix.settings.experimental-features = [ "nix-command" "flakes" ];
     nix.gc = {
       automatic = true;
       dates = "weekly";
       options = "--delete-older-than 14d";
     };
     nix.optimise.automatic = true;
+
+    nixpkgs.config.allowUnfree = true;
+
+    # ── Logging ───────────────────────────────────────────────────────
     services.journald.extraConfig = "SystemMaxUse=500M";
+
+    # ── SSH policy: hosts opt in with services.openssh.enable ─────────
+    # Settings are inert until the service is enabled; declaring the
+    # policy here means SSH can never arrive un-hardened on a new host.
+    services.openssh.settings = {
+      PasswordAuthentication = false;
+      PermitRootLogin = "no";
+      KbdInteractiveAuthentication = false;
+    };
   };
 }

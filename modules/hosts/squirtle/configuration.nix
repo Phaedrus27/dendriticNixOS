@@ -55,13 +55,7 @@
     # Squirtle acts as a subnet router, advertising the local network to the tailnet
     services.tailscale.useRoutingFeatures = "server";
 
-    services.openssh = {
-      enable = true;
-      settings = {
-        PermitRootLogin = "no";
-        PasswordAuthentication = false;
-      };
-    };
+    services.openssh.enable = true;
 
     environment.systemPackages = with pkgs; [
       git
@@ -72,10 +66,6 @@
       lsof
       ncdu
     ];
-
-    nix.settings.experimental-features = [ "nix-command" "flakes" ];
-
-    nixpkgs.config.allowUnfree = true;
 
     security.sudo.wheelNeedsPassword = false;
 

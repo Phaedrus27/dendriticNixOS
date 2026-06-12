@@ -6,7 +6,8 @@
       self.nixosModules.mewSecurity
       self.nixosModules.syncthing
       self.nixosModules.obsidian
-      self.nixosModules.environment
+      self.nixosModules.workstation
+      self.nixosModules.niriSession
       self.nixosModules.tailscale
       self.nixosModules.base
     ];
@@ -61,7 +62,7 @@
       extraGroups = [ "networkmanager" "wheel" ];
     };
 
-    nixpkgs.config.allowUnfree = true;
+    services.openssh.enable = true;
 
     environment.systemPackages = with pkgs; [
       git
