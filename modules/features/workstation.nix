@@ -2,7 +2,7 @@
   flake.nixosModules.workstation = { pkgs, lib, ... }: {
 
     imports = [
-      self.nixosModules.firefox          # moved: a browser isn't a session concern
+      self.nixosModules.coreApps
     ];
 
     # ── Networking ──────────────────────────────────────────────────────
@@ -41,12 +41,23 @@
     };
 
     # ── Printing & power ────────────────────────────────────────────────
-    services.printing = {
-      enable = true;
-      drivers = with pkgs; [
-        gutenprint hplip brlaser epson-escpr samsung-unified-linux-driver
-      ];
+    services.printing.enable = true;
+    services.avahi = {                     # promoted from charizard: resolves .local,
+      enable = true;                       # required for the deviceUri below
+      nssmdns4 = true;
+      openFirewall = true;                 # mDNS needs 5353/UDP both ways
     };
+
+    hardware.printers = {
+      ensurePrinters = [{
+        name = "Brother_DCP-L2530DW";
+        deviceUri = "ipp://BRWF889D2FF6A92.local:631/ipp/print";   # rp=ipp/print from the TXT record
+        model = "everywhere";              # IPP Everywhere: driverless, no vendor packages
+        ppdOptions.PageSize = "A4";
+      }];
+      ensureDefaultPrinter = "Brother_DCP-L2530DW";
+    };
+    
     services.upower.enable = true;
 
     # ── Primary user ────────────────────────────────────────────────────
@@ -58,9 +69,6 @@
 
     # ── Common desktop packages ─────────────────────────────────────────
     environment.systemPackages = with pkgs; [
-      vscodium
-      vesktop
-      vlc
       pywalfox-native
       proton-vpn                         # moved from environment.nix
       tailscale-systray                  # moved from environment.nix

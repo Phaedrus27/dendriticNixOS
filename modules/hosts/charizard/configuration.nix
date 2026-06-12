@@ -33,11 +33,7 @@
       openFirewall = true;
     };
 
-    users.users.phaedrus = {
-      isNormalUser = true;
-      description = "phaedrus";
-      extraGroups = [ "networkmanager" "wheel" ];
-    };
+    services.tuned.enable = true;
 
     services.openssh.enable = true;
 

@@ -5,8 +5,7 @@
       self.nixosModules.mewNiri
       self.nixosModules.mewSecurity
       self.nixosModules.syncthing
-      self.nixosModules.obsidian
-      self.nixosModules.workstation
+      self.nixosModules.workstation     
       self.nixosModules.niriSession
       self.nixosModules.tailscale
       self.nixosModules.base
@@ -15,62 +14,20 @@
     boot.loader.systemd-boot.enable = true;
     boot.loader.efi.canTouchEfiVariables = true;
 
-    networking = {
-      hostName = "mew";
-    };
+    networking.hostName = "mew";
 
-    time.timeZone = "Europe/Brussels";
-    i18n.defaultLocale = "en_GB.UTF-8";
-
-    services.xserver.xkb = {
-      layout = "fr";
-      variant = "afnor";
-    };
-    console.keyMap = "fr";
-
-    # services.tuned.enable = true;
-    services.upower.enable = true;
-    services.printing = {
-      enable = true;
-      drivers = with pkgs; [
-        gutenprint        # generic, covers many printers
-        hplip             # HP printers
-        brlaser           # Brother laser printers
-        epson-escpr       # Epson
-        samsung-unified-linux-driver  # Samsung
-      ];
-    };
-
+    # ── Host-specific hardware ──────────────────────────────────────────
     hardware.bluetooth = {
       enable = true;
       powerOnBoot = true;
     };
     services.blueman.enable = true;
 
-    services.pulseaudio.enable = false;
-    security.rtkit.enable = true;
-    services.pipewire = {
-      enable = true;
-      alsa.enable = true;
-      alsa.support32Bit = true;
-      pulse.enable = true;
-    };
-
-    users.users.phaedrus = {
-      isNormalUser = true;
-      description = "phaedrus";
-      extraGroups = [ "networkmanager" "wheel" ];
-    };
+    # Deliberately off: tuned conflicted with TLP on this machine
+    # Power management handled by the Framework defaults.
+    # services.tuned.enable = true;
 
     services.openssh.enable = true;
-
-    environment.systemPackages = with pkgs; [
-      git
-      vscodium
-      vesktop
-      vlc
-      pywalfox-native
-    ];
 
     system.stateVersion = "25.11";
   };
