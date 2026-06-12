@@ -16,6 +16,10 @@
         }
       '';
     in {
+      # Stable identity so the module system deduplicates this module when
+      # it arrives via multiple import paths (seedbox, mediaServer, hosts).
+      key = "dendriticNixOS/monitoring";
+
       options.dendriticNixOS.monitoring.watchedServices = lib.mkOption {
         type = lib.types.listOf lib.types.str;
         default = [ ];
