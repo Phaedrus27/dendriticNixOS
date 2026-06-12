@@ -6,7 +6,6 @@
       self.nixosModules.charizardSecurity
       self.nixosModules.gaming
       self.nixosModules.syncthing
-      self.nixosModules.coreApps
       self.nixosModules.chromium
       self.nixosModules.keychron
       self.nixosModules.niriSession
@@ -25,12 +24,6 @@
       }];
       defaultGateway = "192.168.1.1";
       nameservers = [ "1.1.1.1" "8.8.8.8" ];
-    };
-
-    services.avahi = {
-      enable = true;
-      nssmdns4 = true;
-      openFirewall = true;
     };
 
     services.tuned.enable = true;
