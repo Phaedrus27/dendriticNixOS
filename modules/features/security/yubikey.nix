@@ -1,35 +1,64 @@
 { self, inputs, ... }: {
-  flake.nixosModules.yubikey = { pkgs, ... }: {
+  flake.nixosModules.yubikey = { pkgs, lib, ... }: {
 
-    # PC/SC daemon for smart card communication
-    services.pcscd.enable = true;
+    # ── FIDO2: interactive auth (SSH sk-keys, sudo, LUKS) ───────────────
+    # Allowlist shape: enable=false kills the default-on-everywhere
+    # behavior (23 PAM services!); u2f is then granted only where it
+    # defends a privilege boundary.
+    security.pam.u2f = {
+      enable = false;
+      control = "sufficient";
+      settings = {
+        cue = true;
+        # Fixed origin: one enrollment works on every host, current and
+        # future. (Default pam://$HOSTNAME is why the old authfiles
+        # diverged per machine.)
+        origin = "pam://phaedrus";
+        appid = "pam://phaedrus";
+        authfile = pkgs.writeText "u2f_mappings" ''
+          phaedrus:rELX0wy5c6jLTTZn/br44PmmRzA9AQG6ETdujfbO3xg5V1tWy0fGpc6m8Epm9XWkfqfomoPkPjauhpITqTh/ww==,s480h3rliey9z8XxMGs70OzPMken8ffJ/W3YHk2guD02xkeBh8IqWFjJ+m5+vJa5SzbvM0YemdULdiGcOA758Q==,es256,+presence:0w2JUMOrqsgTCJ68durzPfR5XEK82t/s2HUukJXBvMXYSaOXC2bzAlQca4I3dcORSx6qUIt7u8wapNrjTrsJmw==,FVozS59qYUHX6t7OHPT9yQQR5TlqwtDmiIPcLRfj0m74+sskH/r5ICtUbU0BRhDZxYXsX71hCcxa0TTgdwJptw==,es256,+presence
+        '';
+      };
+    };
+    security.pam.services.sudo.u2fAuth = true;
+    # security.pam.services.polkit-1.u2fAuth = true;  # optional: GUI auth prompts
 
-    # GPG agent with pinentry for YubiKey PIN prompts
+    # Fleet-wide: the resident sk-keys may log in to any of my machines.
+    # (Automation keys — squirtle-backup — stay per-host and restricted.)
+    users.users.phaedrus.openssh.authorizedKeys.keys = [
+      "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIJtarCyjvvCxzi1PwWavZXaPLcHRiDeIAZr2tyAFA+zXAAAADHNzaDp5dWJpa2V5QQ== yubikeyA"
+      "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIOpNEHSKkHZCiCkuss0aNrLFKet3gEkQbWfysFzpgI+bAAAADHNzaDp5dWJpa2V5Qw== yubikeyC"
+    ];
+
+    # sk-key stubs use non-default filenames, so tell ssh to offer them
+    # (missing files are silently ignored, so this is safe fleet-wide).
+    programs.ssh.extraConfig = ''
+      IdentityFile ~/.ssh/id_yubikeyA
+      IdentityFile ~/.ssh/id_yubikeyC
+    '';
+
+    # ── TRANSITIONAL: OpenPGP SSH path, kept alive during the cutover ────
+    # The old auth route (gpg-agent → cardno: RSA keys). Deleted in
+    # commit 2, once both sk-keys are verified against every host.
+    # NOTE: the SSH_AUTH_SOCK overrides and PKCS11 config remain in
+    # charizardSecurity.nix / mewSecurity.nix untouched until commit 2.
     programs.gnupg.agent = {
       enable = true;
       enableSSHSupport = true;
       pinentryPackage = pkgs.pinentry-gtk2;
     };
 
-    # udev rules so your user can access the YubiKey without root
-    services.udev.packages = [ pkgs.yubikey-personalization ];
+    # ── PIV: sops secret editing only ────────────────────────────────────
+    services.pcscd.enable = true;
 
-    # pam_u2f allows the YubiKey to satisfy sudo authentication via a physical touch.
-    security.pam.u2f = {
-      enable = true;
-      control = "sufficient";
-      settings.cue = true;
-    };
-    security.pam.services.sudo.u2fAuth = true;
-
-    # Useful YubiKey management tools
     environment.systemPackages = with pkgs; [
       yubikey-manager
-      yubikey-personalization
-      gnupg
       age
-      sops
       age-plugin-yubikey
+      sops
+      gnupg          # TRANSITIONAL: leaves with the gpg block in commit 2
     ];
+
+    services.udev.packages = [ pkgs.yubikey-personalization ];
   };
 }
