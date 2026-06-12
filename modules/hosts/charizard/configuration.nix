@@ -6,7 +6,7 @@
       self.nixosModules.charizardSecurity
       self.nixosModules.gaming
       self.nixosModules.syncthing
-      self.nixosModules.obsidian
+      self.nixosModules.coreApps
       self.nixosModules.chromium
       self.nixosModules.keychron
       self.nixosModules.niriSession
@@ -27,42 +27,10 @@
       nameservers = [ "1.1.1.1" "8.8.8.8" ];
     };
 
-    time.timeZone = "Europe/Brussels";
-    i18n.defaultLocale = "en_GB.UTF-8";
-
-    services.xserver.xkb = {
-      layout = "fr";
-      variant = "afnor";
-    };
-    console.keyMap = "fr";
-
-    services.libinput.enable = true;
-    services.tuned.enable = true;
-    services.upower.enable = true;
-    services.printing = {
-      enable = true;
-      drivers = with pkgs; [
-        gutenprint        # generic, covers many printers
-        hplip             # HP printers
-        brlaser           # Brother laser printers
-        epson-escpr       # Epson
-        samsung-unified-linux-driver  # Samsung
-      ];
-    };
-
     services.avahi = {
       enable = true;
       nssmdns4 = true;
       openFirewall = true;
-    };
-
-    services.pulseaudio.enable = false;
-    security.rtkit.enable = true;
-    services.pipewire = {
-      enable = true;
-      alsa.enable = true;
-      alsa.support32Bit = true;
-      pulse.enable = true;
     };
 
     users.users.phaedrus = {
@@ -70,14 +38,6 @@
       description = "phaedrus";
       extraGroups = [ "networkmanager" "wheel" ];
     };
-
-    environment.systemPackages = with pkgs; [
-      git
-      vscodium
-      vesktop
-      vlc
-      pywalfox-native
-    ];
 
     services.openssh.enable = true;
 
