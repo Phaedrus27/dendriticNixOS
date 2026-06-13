@@ -23,15 +23,7 @@
     security.pam.services.sudo.u2fAuth = true;
     # security.pam.services.polkit-1.u2fAuth = true;  # optional: GUI auth prompts
 
-    # Fleet-wide: the resident sk-keys may log in to any of my machines.
-    # (Automation keys — squirtle-backup — stay per-host and restricted.)
-    users.users.phaedrus.openssh.authorizedKeys.keys = [
-      "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIJtarCyjvvCxzi1PwWavZXaPLcHRiDeIAZr2tyAFA+zXAAAADHNzaDp5dWJpa2V5QQ== yubikeyA"
-      "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIOpNEHSKkHZCiCkuss0aNrLFKet3gEkQbWfysFzpgI+bAAAADHNzaDp5dWJpa2V5Qw== yubikeyC"
-    ];
-
     # sk-key stubs use non-default filenames, so tell ssh to offer them
-    # (missing files are silently ignored, so this is safe fleet-wide).
     programs.ssh.extraConfig = ''
       IdentityFile ~/.ssh/id_yubikeyA
       IdentityFile ~/.ssh/id_yubikeyC

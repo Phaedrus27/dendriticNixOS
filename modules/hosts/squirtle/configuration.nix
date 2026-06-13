@@ -13,7 +13,6 @@
     self.nixosModules.paperless
     self.nixosModules.backup
     self.nixosModules.base
-    self.nixosModules.yubikey
   ];
 
   boot.loader.systemd-boot.enable = true;
