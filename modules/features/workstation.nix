@@ -51,8 +51,8 @@
     hardware.printers = {
       ensurePrinters = [{
         name = "Brother_DCP-L2530DW";
-        deviceUri = "ipp://BRWF889D2FF6A92.local:631/ipp/print";   # rp=ipp/print from the TXT record
-        model = "everywhere";              # IPP Everywhere: driverless, no vendor packages
+        deviceUri = "ipp://192.168.1.140:631/ipp/print";   # IP (UniFi-reserved), not .local — mDNS unreliable, printer sleeps
+        model = "everywhere";
         ppdOptions.PageSize = "A4";
       }];
       ensureDefaultPrinter = "Brother_DCP-L2530DW";
