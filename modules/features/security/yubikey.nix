@@ -39,17 +39,6 @@
       IdentityFile ~/.ssh/id_yubikeyC
     '';
 
-    # ── TRANSITIONAL: OpenPGP SSH path, kept alive during the cutover ────
-    # The old auth route (gpg-agent → cardno: RSA keys). Deleted in
-    # commit 2, once both sk-keys are verified against every host.
-    # NOTE: the SSH_AUTH_SOCK overrides and PKCS11 config remain in
-    # charizardSecurity.nix / mewSecurity.nix untouched until commit 2.
-    programs.gnupg.agent = {
-      enable = true;
-      enableSSHSupport = true;
-      pinentryPackage = pkgs.pinentry-gtk2;
-    };
-
     # ── PIV: sops secret editing only ────────────────────────────────────
     services.pcscd.enable = true;
 
@@ -58,7 +47,6 @@
       age
       age-plugin-yubikey
       sops
-      gnupg          # TRANSITIONAL: leaves with the gpg block in commit 2
     ];
 
     services.udev.packages = [ pkgs.yubikey-personalization ];
