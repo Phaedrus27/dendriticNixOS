@@ -29,6 +29,8 @@
     # these, add its name here — confirm post-rebuild with grep -l u2f /etc/pam.d/*
     security.pam.services.login.u2fAuth = false;
     security.pam.services.greetd.u2fAuth = false;
+    security.pam.services.su.u2fAuth = false;      # add
+    security.pam.services.sshd.u2fAuth = false;    # add
     # sudo keeps the default-on grant from enable=true (no explicit line needed).
 
     # sk-key stubs use non-default filenames, so tell ssh to offer them.
