@@ -2,11 +2,12 @@
   flake.nixosModules.yubikey = { pkgs, lib, ... }: {
 
     # ── FIDO2: interactive auth (SSH sk-keys, sudo, LUKS) ───────────────
-    # Allowlist shape: enable=false kills the default-on-everywhere
-    # behavior (23 PAM services!); u2f is then granted only where it
-    # defends a privilege boundary.
+    # enable=true is REQUIRED for any pam_u2f line to be emitted. (enable=false
+    # + per-service u2fAuth=true emits NOTHING — verified the hard way.)
+    # enable defaults u2fAuth ON for every PAM service, so we opt OUT of the
+    # unlock path; sudo keeps the default-on grant → touch-to-sudo, no password.
     security.pam.u2f = {
-      enable = false;
+      enable = true;
       control = "sufficient";
       settings = {
         cue = true;
@@ -20,10 +21,17 @@
         '';
       };
     };
-    security.pam.services.sudo.u2fAuth = true;
-    # security.pam.services.polkit-1.u2fAuth = true;  # optional: GUI auth prompts
 
-    # sk-key stubs use non-default filenames, so tell ssh to offer them
+    # Opt OUT of the unlock path — the screen lock / login defend physical
+    # presence, which a touch doesn't help (an attacker at the machine can
+    # touch the key too). Also the wake-from-sleep delay fix.
+    # NOTE: if noctalia's locker authenticates against a service other than
+    # these, add its name here — confirm post-rebuild with grep -l u2f /etc/pam.d/*
+    security.pam.services.login.u2fAuth = false;
+    security.pam.services.greetd.u2fAuth = false;
+    # sudo keeps the default-on grant from enable=true (no explicit line needed).
+
+    # sk-key stubs use non-default filenames, so tell ssh to offer them.
     programs.ssh.extraConfig = ''
       IdentityFile ~/.ssh/id_yubikeyA
       IdentityFile ~/.ssh/id_yubikeyC
