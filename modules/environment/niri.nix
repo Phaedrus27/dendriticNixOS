@@ -16,6 +16,22 @@
 
   perSystem = { pkgs, lib, self', ... }:
     let
+
+      # Flip to false to fall back to niri's built-in animations.
+      useCachyAnimations = true;
+
+      cachyAnimations = {
+        workspace-switch.spring = _: { props = { damping-ratio = 1.0; stiffness = 1000; epsilon = 0.0001; }; };
+        window-open  = { duration-ms = 200; curve = "ease-out-quad"; };
+        window-close = { duration-ms = 200; curve = "ease-out-cubic"; };
+        horizontal-view-movement.spring = _: { props = { damping-ratio = 1.0; stiffness = 900; epsilon = 0.0001; }; };
+        window-movement.spring = _: { props = { damping-ratio = 1.0; stiffness = 800; epsilon = 0.0001; }; };
+        window-resize.spring   = _: { props = { damping-ratio = 1.0; stiffness = 1000; epsilon = 0.0001; }; };
+        config-notification-open-close.spring = _: { props = { damping-ratio = 0.6; stiffness = 1200; epsilon = 0.001; }; };
+        screenshot-ui-open = { duration-ms = 300; curve = "ease-out-quad"; };
+        overview-open-close.spring = _: { props = { damping-ratio = 1.0; stiffness = 900; epsilon = 0.0001; }; };
+      };
+
       commonSettings = {
         spawn-at-startup = [
           (lib.getExe self'.packages.myNoctalia)
@@ -56,16 +72,17 @@
         prefer-no-csd = {};
 
         input = {
-          keyboard.xkb = {
-            layout = "fr,us";
-            variant = "afnor";
+          keyboard = {
+            xkb = {
+              layout = "fr,us";
+              variant = "afnor";
+            };
+            numlock = {};
           };
           touchpad = {
             natural-scroll = {};
             tap = {};
           };
-          # Hover-focus without the view lurching: focus follows the pointer,
-          # but niri won't auto-scroll the strip to reveal an off-screen column.
           focus-follows-mouse = _: { props.max-scroll-amount = "0%"; };
         };
 
@@ -74,6 +91,18 @@
             geometry-corner-radius = 20;
             clip-to-geometry = true;
             shadow.on = {};
+          }
+          # Steam: float its child/popup windows, but keep the main client tiled.
+          {
+            matches = [ { app-id = "steam"; } ];
+            excludes = [ { title = "^[Ss]team$"; } ];
+            open-floating = true;
+          }
+          # Steam: pin notification toasts to the bottom-right, without stealing focus.
+          {
+            matches = [ { app-id = "steam"; title = "^notificationtoasts_\\d+_desktop$"; } ];
+            default-floating-position = _: { props = { x = 10; y = 10; relative-to = "bottom-right"; }; };
+            open-focused = false;
           }
         ];
 
@@ -202,17 +231,25 @@
         layout = {
           background-color = "transparent";
           focus-ring.off = {};
-          gaps = 8;
+          gaps = 16;
           preset-column-widths = [
             { proportion = 0.33333; }
             { proportion = 0.5; }
             { proportion = 0.66667; }
           ];
-          struts = {
-            top = 8;
-            bottom = 8;
-            left = 4;
-            right = 4;
+          struts = {};
+
+          tab-indicator = {
+            hide-when-single-tab = {};
+            place-within-column = {};
+            position = "top";
+            width = 4;
+            gap = 6;
+            gaps-between-tabs = 4;
+            corner-radius = 4;
+            length = _: { props.total-proportion = 1.0; };
+            active-color = "#7fc8ff";
+            inactive-color = "#505050";
           };
         };
 
@@ -225,8 +262,10 @@
 
         debug = {
           honor-xdg-activation-with-invalid-serial = true;
-        };
-      };
+          };
+          } // lib.optionalAttrs useCachyAnimations {
+            animations = cachyAnimations;
+          };
     in
     {
       packages.myNiri = inputs.wrapper-modules.wrappers.niri.wrap {
