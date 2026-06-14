@@ -26,6 +26,7 @@
           "/qbittorrent.home/100.85.58.101"
           "/squirtle.home/100.85.58.101"
           "/paperless.home/100.85.58.101"
+          "/unifi.home/192.168.1.1"
         ];
       };
     };
