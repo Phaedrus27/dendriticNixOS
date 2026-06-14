@@ -72,6 +72,7 @@
       pywalfox-native
       proton-vpn                         # moved from environment.nix
       tailscale-systray                  # moved from environment.nix
+      p7zip
     ];
   };
 }
