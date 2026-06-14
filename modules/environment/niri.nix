@@ -69,7 +69,10 @@
           "Mod+Space".spawn-sh = "${lib.getExe self'.packages.myNoctalia} ipc call launcher toggle";
           "Mod+B".spawn = "firefox";
           "Mod+E".spawn = "nautilus";
-          "Mod+Alt+L".spawn-sh = "${lib.getExe self'.packages.myNoctalia} ipc call lockScreen lock";
+          "Mod+Alt+L" = _: {
+            props.allow-inhibiting = false;
+            content.spawn-sh = "${lib.getExe self'.packages.myNoctalia} ipc call lockScreen lock";
+          };
           "Mod+Shift+Q".spawn-sh = "${lib.getExe self'.packages.myNoctalia} ipc call sessionMenu toggle";
 
           # Window focus
@@ -78,10 +81,12 @@
           "Mod+H".focus-column-left = {};
           "Mod+Right".focus-column-right = {};
           "Mod+L".focus-column-right = {};
-          "Mod+Up".focus-window-up = {};
-          "Mod+K".focus-window-up = {};
+          "Mod+Up".focus-window-up = {};                       # arrows: strict within-column
           "Mod+Down".focus-window-down = {};
-          "Mod+J".focus-window-down = {};
+          "Mod+J".focus-window-or-workspace-down = {};         # J/K: within-column, then cross at edge
+          "Mod+K".focus-window-or-workspace-up = {};
+          "Mod+U".focus-workspace-down = {};                   # U/I: pure workspace jump (ex-PgDn/PgUp)
+          "Mod+I".focus-workspace-up = {};
           "Mod+Home".focus-column-first = {};
           "Mod+End".focus-column-last = {};
 
@@ -91,9 +96,13 @@
           "Mod+Ctrl+Right".move-column-right = {};
           "Mod+Ctrl+L".move-column-right = {};
           "Mod+Ctrl+Up".move-window-up = {};
-          "Mod+Ctrl+K".move-window-up = {};
           "Mod+Ctrl+Down".move-window-down = {};
-          "Mod+Ctrl+J".move-window-down = {};
+          "Mod+Ctrl+J".move-window-down-or-to-workspace-down = {};
+          "Mod+Ctrl+K".move-window-up-or-to-workspace-up = {};
+          "Mod+Ctrl+U".move-column-to-workspace-down = {};
+          "Mod+Ctrl+I".move-column-to-workspace-up = {};
+          "Mod+Ctrl+colon".move-column-to-monitor-left = {};
+          "Mod+Ctrl+semicolon".move-column-to-monitor-right = {};
           "Mod+Ctrl+Home".move-column-to-first = {};
           "Mod+Ctrl+End".move-column-to-last = {};
 
@@ -121,8 +130,10 @@
           "Mod+Ctrl+C".center-visible-columns = {};
           "Mod+Minus".set-column-width = "-10%";
           "Mod+plus".set-column-width = "+10%";
-          "Mod+Shift+Minus".set-window-height = "-10%";
-          "Mod+Shift+plus".set-window-height = "+10%";
+          "Mod+slash".set-window-height = "-10%";
+          "Mod+asterisk".set-window-height = "+10%";
+          "Mod+R".switch-preset-column-width = {};
+          "Mod+Shift+R".switch-preset-column-width-back = {};   # reverse cycle (optional)
 
           # Modes
           "Mod+T".toggle-window-floating = {};
@@ -143,6 +154,11 @@
         layout = {
           focus-ring.off = {};
           gaps = 8;
+          preset-column-widths = [
+            { proportion = 0.33333; }
+            { proportion = 0.5; }
+            { proportion = 0.66667; }
+          ];
           struts = {
             top = 8;
             bottom = 8;

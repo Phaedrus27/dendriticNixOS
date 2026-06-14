@@ -2,7 +2,7 @@
   flake.nixosModules.niriSession = { pkgs, ... }: {
     imports = [
       self.nixosModules.niri
-      self.nixosModules.screenshot       # grim/wayland tooling: session-specific
+      self.nixosModules.screenshot       
       self.nixosModules.nautilus         # "the file manager for this session";
                                          # GNOME would bring its own
     ];
