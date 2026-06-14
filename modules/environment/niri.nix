@@ -32,6 +32,29 @@
 
         xwayland-satellite.path = lib.getExe pkgs.xwayland-satellite;
 
+        # Toolkit hints for the Wayland session. niri exports these to every
+        # process it spawns, so they cover the whole greetd -> niri-session tree.
+        environment = {
+          # Qt: prefer the Wayland backend, fall back to X11 (xcb) if a Qt app
+          # lacks the wayland plugin — fallback rather than failing to launch.
+          QT_QPA_PLATFORM = "wayland;xcb";
+          # Qt-side counterpart to prefer-no-csd: suppress Qt-drawn titlebars.
+          QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
+          # Electron/Chromium (VS Code, Discord, …) auto-pick Wayland rendering.
+          ELECTRON_OZONE_PLATFORM_HINT = "auto";
+          # Qt borrows the GTK theme for dialogs. REMOVE this line if you use the
+          # NixOS qt module (qt.enable / qt.platformTheme) — it sets this var too
+          # and the two will collide.
+          QT_QPA_PLATFORMTHEME = "gtk3";
+        };
+
+        hotkey-overlay = {
+          skip-at-startup = {};
+          hide-not-bound = {};   # the curated-list switch from earlier
+        };
+
+        prefer-no-csd = {};
+
         input = {
           keyboard.xkb = {
             layout = "fr,us";
@@ -41,6 +64,9 @@
             natural-scroll = {};
             tap = {};
           };
+          # Hover-focus without the view lurching: focus follows the pointer,
+          # but niri won't auto-scroll the strip to reveal an off-screen column.
+          focus-follows-mouse = _: { props.max-scroll-amount = "0%"; };
         };
 
         window-rules = [
@@ -154,7 +180,7 @@
           # Modes
           "Mod+T".toggle-window-floating = {};
           "Mod+F".fullscreen-window = {};
-          "Mod+W".toggle-column-tabbed-display = {};
+          "Mod+Z".toggle-column-tabbed-display = {};
 
           # Screenshots
           "Mod+Shift+S" = _: {
@@ -174,6 +200,7 @@
         };
 
         layout = {
+          background-color = "transparent";
           focus-ring.off = {};
           gaps = 8;
           preset-column-widths = [
@@ -188,6 +215,13 @@
             right = 4;
           };
         };
+
+        layer-rules = [
+          {
+            matches = [ { namespace = "^noctalia-wallpaper"; } ];
+            place-within-backdrop = true;
+          }
+        ];
 
         debug = {
           honor-xdg-activation-with-invalid-serial = true;
