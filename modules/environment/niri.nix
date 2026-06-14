@@ -253,9 +253,12 @@
           };
         };
 
+        # layout: DELETE the background-color line (Option 1 doesn't use it —
+        # the sharp wallpaper should render on workspaces normally)
+
         layer-rules = [
           {
-            matches = [ { namespace = "^noctalia-wallpaper"; } ];
+            matches = [ { namespace = "^noctalia-overview"; } ];   # was ^noctalia-wallpaper
             place-within-backdrop = true;
           }
         ];
