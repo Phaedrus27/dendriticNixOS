@@ -65,15 +65,31 @@
           "Mod+Shift+K".switch-layout = "next";
 
           # Applications
-          "Mod+Return".spawn-sh = lib.getExe self.packages.${pkgs.stdenv.hostPlatform.system}.myAlacritty;
-          "Mod+Space".spawn-sh = "${lib.getExe self'.packages.myNoctalia} ipc call launcher toggle";
-          "Mod+B".spawn = "firefox";
-          "Mod+E".spawn = "nautilus";
+          "Mod+Return" = _: {
+            props.hotkey-overlay-title = "Terminal";
+            content.spawn-sh = lib.getExe self.packages.${pkgs.stdenv.hostPlatform.system}.myAlacritty;
+          };
+          "Mod+Space" = _: {
+            props.hotkey-overlay-title = "Application Launcher";
+            content.spawn-sh = "${lib.getExe self'.packages.myNoctalia} ipc call launcher toggle";
+          };
+          "Mod+B" = _: {
+            props.hotkey-overlay-title = "Browser";
+            content.spawn = "firefox";
+          };
+          "Mod+E" = _: {
+            props.hotkey-overlay-title = "File Manager";
+            content.spawn = "nautilus";
+          };
           "Mod+Alt+L" = _: {
             props.allow-inhibiting = false;
+            props.hotkey-overlay-title = "Lock Screen";
             content.spawn-sh = "${lib.getExe self'.packages.myNoctalia} ipc call lockScreen lock";
           };
-          "Mod+Shift+Q".spawn-sh = "${lib.getExe self'.packages.myNoctalia} ipc call sessionMenu toggle";
+          "Mod+Shift+Q" = _: {
+            props.hotkey-overlay-title = "Session Menu";
+            content.spawn-sh = "${lib.getExe self'.packages.myNoctalia} ipc call sessionMenu toggle";
+          };
 
           # Window focus
           "Mod+Q".close-window = {};
@@ -141,8 +157,14 @@
           "Mod+W".toggle-column-tabbed-display = {};
 
           # Screenshots
-          "Mod+S".spawn-sh = "screenshot-full";
-          "Mod+Shift+S".spawn-sh = "screenshot-region";
+          "Mod+Shift+S" = _: {
+            props.hotkey-overlay-title = "Screenshot (full)";
+            content.spawn-sh = "screenshot-full";
+          };
+          "Mod+S" = _: {
+            props.hotkey-overlay-title = "Screenshot (region)";
+            content.spawn-sh = "screenshot-region";
+          };
 
           # Escape / power
           "Mod+Escape".toggle-keyboard-shortcuts-inhibit = {};
