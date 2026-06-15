@@ -259,7 +259,7 @@
     },
     "wallpaper": {
       "enabled": true,
-      "overviewEnabled": true,
+      "overviewEnabled": false,
       "directory": "/home/phaedrus/Pictures/Wallpapers",
       "monitorDirectories": [],
       "enableMultiMonitorDirectories": false,

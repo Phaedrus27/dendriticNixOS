@@ -254,7 +254,7 @@
 
         layer-rules = [
           {
-            matches = [ { namespace = "^noctalia-overview"; } ];   # was ^noctalia-wallpaper
+            matches = [ { namespace = "^noctalia-wallpaper"; } ];   # was ^noctalia-wallpaper
             place-within-backdrop = true;
           }
         ];
@@ -277,9 +277,10 @@
           settings = commonSettings // {
             outputs = {
               "DP-1" = {
-                mode = "2560x1440@239.970";   # you're at 59.95 on a 279 Hz panel — see note
+                mode = "2560x1440@239.970";
                 scale = 1.0;
                 position = _: { props = { x = 0; y = 620; }; };
+                variable-refresh-rate = _: { props.on-demand = true; };   # VRR only for fullscreen apps
               };
               "HDMI-A-1" = {
                 mode = "2560x2880@59.967";
