@@ -58,7 +58,6 @@
           QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
           # Electron/Chromium (VS Code, Discord, …) auto-pick Wayland rendering.
           ELECTRON_OZONE_PLATFORM_HINT = "auto";
-
         };
 
         hotkey-overlay = {
@@ -275,20 +274,20 @@
 
       packages.myNiriCharizard = inputs.wrapper-modules.wrappers.niri.wrap {
         inherit pkgs;
-        settings = commonSettings // {
-          extraConfig = ''
-            output "DP-1" {
-              mode "2560x1440@60"
-              position x=0 y=620
-              scale 1.0
-            }
-            output "HDMI-A-1" {
-              mode "2560x2880@60"
-              position x=2560 y=0
-              scale 1.25
-            }
-          '';
-        };
+          settings = commonSettings // {
+            outputs = {
+              "DP-1" = {
+                mode = "2560x1440@239.970";   # you're at 59.95 on a 279 Hz panel — see note
+                scale = 1.0;
+                position = _: { props = { x = 0; y = 620; }; };
+              };
+              "HDMI-A-1" = {
+                mode = "2560x2880@59.967";
+                scale = 1.25;
+                position = _: { props = { x = 2560; y = 0; }; };
+              };
+            };
+          };
       };
 
       packages.myNiriMew = inputs.wrapper-modules.wrappers.niri.wrap {
