@@ -141,6 +141,10 @@
             props.hotkey-overlay-title = "Session Menu";
             content.spawn-sh = "${lib.getExe self'.packages.myNoctalia} ipc call sessionMenu toggle";
           };
+          "Mod+Shift+V" = _: {
+            props.hotkey-overlay-title = "Toggle VRR (DP-1)";
+            content.spawn-sh = "vrr-toggle";
+          };
 
           # Window focus
           "Mod+Q".close-window = {};
@@ -280,7 +284,6 @@
                 mode = "2560x1440@239.970";
                 scale = 1.0;
                 position = _: { props = { x = 0; y = 620; }; };
-                variable-refresh-rate = _: {};
               };
               "HDMI-A-1" = {
                 mode = "2560x2880@59.967";

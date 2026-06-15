@@ -18,6 +18,19 @@
         | tee ~/Pictures/Screenshots/$(date +%Y-%m-%d_%H-%M-%S).png \
         | ${pkgs.wl-clipboard}/bin/wl-copy
     '';
+
+    vrrToggle = pkgs.writeShellScriptBin "vrr-toggle" ''
+      out="DP-1"
+      if niri msg outputs \
+        | awk -v o="($out)" 'index($0,o){f=1} f && /Variable refresh rate:/{print; exit}' \
+        | grep -q 'enabled'; then
+        niri msg output "$out" vrr off
+        ${pkgs.libnotify}/bin/notify-send -t 1500 "VRR" "Off — $out"
+      else
+        niri msg output "$out" vrr on
+        ${pkgs.libnotify}/bin/notify-send -t 1500 "VRR" "On — $out"
+      fi
+    '';
   in {
     environment.systemPackages = [
       pkgs.wayshot
