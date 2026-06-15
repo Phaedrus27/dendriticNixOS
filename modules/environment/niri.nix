@@ -58,10 +58,7 @@
           QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
           # Electron/Chromium (VS Code, Discord, …) auto-pick Wayland rendering.
           ELECTRON_OZONE_PLATFORM_HINT = "auto";
-          # Qt borrows the GTK theme for dialogs. REMOVE this line if you use the
-          # NixOS qt module (qt.enable / qt.platformTheme) — it sets this var too
-          # and the two will collide.
-          QT_QPA_PLATFORMTHEME = "gtk3";
+
         };
 
         hotkey-overlay = {
