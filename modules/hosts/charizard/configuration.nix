@@ -11,6 +11,7 @@
       self.nixosModules.niriSession
       self.nixosModules.tailscale
       self.nixosModules.base
+      self.nixosModules.editingApps
     ];
 
     boot.loader.systemd-boot.enable = true;
