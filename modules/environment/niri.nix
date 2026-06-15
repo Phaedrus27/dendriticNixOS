@@ -280,7 +280,7 @@
                 mode = "2560x1440@239.970";
                 scale = 1.0;
                 position = _: { props = { x = 0; y = 620; }; };
-                variable-refresh-rate = _: { props.on-demand = true; };   # VRR only for fullscreen apps
+                variable-refresh-rate = true;
               };
               "HDMI-A-1" = {
                 mode = "2560x2880@59.967";
