@@ -275,23 +275,10 @@
           };
    in
    {
-     _module.args.niriCommonSettings = commonSettings;   # <- add this
+     _module.args.niriCommonSettings = commonSettings;
      packages.myNiri = inputs.wrapper-modules.wrappers.niri.wrap {
        inherit pkgs;
        settings = commonSettings;
      };
-
-      packages.myNiriMew = inputs.wrapper-modules.wrappers.niri.wrap {
-        inherit pkgs;
-        settings = commonSettings // {
-          extraConfig = ''
-            output "eDP-1" {
-              mode "2256x1504@60"
-              position x=0 y=0
-              scale 1.5
-            }
-          '';
-        };
-      };
     };
 }
