@@ -31,6 +31,7 @@
         ${pkgs.libnotify}/bin/notify-send -t 1500 "VRR" "On — $out"
       fi
     '';
+    
   in {
     environment.systemPackages = [
       pkgs.wayshot

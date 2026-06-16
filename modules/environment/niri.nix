@@ -4,10 +4,14 @@
       enable = true;
       package = lib.mkDefault self.packages.${pkgs.stdenv.hostPlatform.system}.myNiri;
     };
-  };
 
-  flake.nixosModules.charizardNiri = { pkgs, lib, ... }: {
-    programs.niri.package = lib.mkForce self.packages.${pkgs.stdenv.hostPlatform.system}.myNiriCharizard;
+    # Cursor theme: install it and set it session-wide so niri and all clients
+    # (Wayland + XWayland) resolve a real theme instead of failing to load icons.
+    environment.systemPackages = [ pkgs.bibata-cursors ];
+    environment.sessionVariables = {
+      XCURSOR_THEME = "Bibata-Modern-Classic";
+      XCURSOR_SIZE = "24";
+    };
   };
 
   flake.nixosModules.mewNiri = { pkgs, lib, ... }: {
@@ -66,6 +70,11 @@
         };
 
         prefer-no-csd = {};
+
+        cursor = {
+          xcursor-theme = "Bibata-Modern-Classic";
+          xcursor-size = 24;
+        };
 
         input = {
           keyboard = {
@@ -140,10 +149,6 @@
           "Mod+Shift+Q" = _: {
             props.hotkey-overlay-title = "Session Menu";
             content.spawn-sh = "${lib.getExe self'.packages.myNoctalia} ipc call sessionMenu toggle";
-          };
-          "Mod+Shift+V" = _: {
-            props.hotkey-overlay-title = "Toggle VRR (DP-1)";
-            content.spawn-sh = "vrr-toggle";
           };
 
           # Window focus
@@ -253,12 +258,9 @@
           };
         };
 
-        # layout: DELETE the background-color line (Option 1 doesn't use it —
-        # the sharp wallpaper should render on workspaces normally)
-
         layer-rules = [
           {
-            matches = [ { namespace = "^noctalia-wallpaper"; } ];   # was ^noctalia-wallpaper
+            matches = [ { namespace = "^noctalia-wallpaper"; } ];
             place-within-backdrop = true;
           }
         ];
@@ -269,30 +271,13 @@
           } // lib.optionalAttrs useCachyAnimations {
             animations = cachyAnimations;
           };
-    in
-    {
-      packages.myNiri = inputs.wrapper-modules.wrappers.niri.wrap {
-        inherit pkgs;
-        settings = commonSettings;
-      };
-
-      packages.myNiriCharizard = inputs.wrapper-modules.wrappers.niri.wrap {
-        inherit pkgs;
-          settings = commonSettings // {
-            outputs = {
-              "DP-1" = {
-                mode = "2560x1440@239.970";
-                scale = 1.0;
-                position = _: { props = { x = 0; y = 620; }; };
-              };
-              "HDMI-A-1" = {
-                mode = "2560x2880@59.967";
-                scale = 1.25;
-                position = _: { props = { x = 2560; y = 0; }; };
-              };
-            };
-          };
-      };
+   in
+   {
+     _module.args.niriCommonSettings = commonSettings;   # <- add this
+     packages.myNiri = inputs.wrapper-modules.wrappers.niri.wrap {
+       inherit pkgs;
+       settings = commonSettings;
+     };
 
       packages.myNiriMew = inputs.wrapper-modules.wrappers.niri.wrap {
         inherit pkgs;
