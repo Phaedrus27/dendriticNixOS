@@ -181,6 +181,8 @@
           "Mod+Ctrl+semicolon".move-column-to-monitor-right = {};
           "Mod+Ctrl+Home".move-column-to-first = {};
           "Mod+Ctrl+End".move-column-to-last = {};
+          "Mod+Ctrl+Minus".consume-or-expel-window-left = {};
+          "Mod+Ctrl+Plus".consume-or-expel-window-right = {};
 
           # Monitor focus
           "Mod+Shift+Left".focus-monitor-left = {};
@@ -204,8 +206,8 @@
           "Mod+Ctrl+F".expand-column-to-available-width = {};
           "Mod+C".center-column = {};
           "Mod+Ctrl+C".center-visible-columns = {};
-          "Mod+Minus".set-column-width = "-10%";
-          "Mod+plus".set-column-width = "+10%";
+          "Mod+apostrope".set-column-width = "-10%";
+          "Mod+dead_circumflex".set-column-width = "+10%";
           "Mod+slash".set-window-height = "-10%";
           "Mod+asterisk".set-window-height = "+10%";
           "Mod+R".switch-preset-column-width = {};
