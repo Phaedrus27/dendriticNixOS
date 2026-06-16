@@ -227,7 +227,7 @@
           "Mod+Home".focus-column-first = {};
           "Mod+End".focus-column-last = {};
 
-          # Move windows  (+ consume/expel into the neighbouring column)
+          # Move windows
           "Mod+Ctrl+Left".move-column-left = {};
           "Mod+Ctrl+H".move-column-left = {};
           "Mod+Ctrl+Right".move-column-right = {};
