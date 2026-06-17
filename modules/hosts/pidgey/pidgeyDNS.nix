@@ -1,0 +1,64 @@
+{ ... }:
+{
+  flake.modules.nixos.pidgey-dns =
+    { config, lib, pkgs, ... }:
+    let
+      # ──── Region records ────
+      # Forward records per region TLD. Hosts currently share the flat
+      # 192.168.1.0/24; server records move into the johto block when the
+      # servers VLAN (192.168.10.0/24) goes live.
+      kantoRecords = {
+        "unifi.kanto"    = "192.168.1.1";
+        "pidgey.kanto"   = "192.168.1.5";
+        "squirtle.kanto" = "192.168.1.7";
+      };
+
+      johtoRecords = {
+        # Populated at servers-VLAN cutover (192.168.10.x):
+        #   pidgey.johto / squirtle.johto / bulbasaur.johto / abra.johto
+      };
+
+      hoennRecords = {
+        # Populated as IoT devices receive static leases.
+      };
+
+      allRecords = kantoRecords // johtoRecords // hoennRecords;
+
+      regionsConf = pkgs.writeText "05-regions.conf"
+        (lib.concatStringsSep "\n"
+          (lib.mapAttrsToList (host: ip: "address=/${host}/${ip}") allRecords));
+    in
+    {
+      # ──── Pi-hole container ────
+      # Pi-hole has no NixOS module; it runs as a pinned OCI container on host
+      # networking so FTL binds :53 directly on the LAN interface.
+      virtualisation.oci-containers.containers.pihole = {
+        image = "pihole/pihole:2025.12.0"; # pin to a release tag; never :latest
+        extraOptions = [ "--network=host" ];
+
+        environment = {
+          TZ = "Europe/Brussels";
+          # Answer on every interface the host networking namespace exposes.
+          FTLCONF_dns_listeningMode = "all";
+          # Make FTL read the custom records mounted into /etc/dnsmasq.d.
+          FTLCONF_misc_etc_dnsmasq_d = "true";
+        };
+
+        # Supplies FTLCONF_webserver_api_password; kept out of the Nix store.
+        environmentFiles = [ config.sops.secrets.pihole-webpassword.path ];
+
+        volumes = [
+          "/var/lib/pihole/etc-pihole:/etc/pihole"
+          "${regionsConf}:/etc/dnsmasq.d/05-regions.conf:ro"
+        ];
+      };
+
+      sops.secrets.pihole-webpassword = { };
+
+      # DNS (53) and the admin UI (80) on the LAN NIC only.
+      networking.firewall.interfaces."end0" = {
+        allowedTCPPorts = [ 53 80 ];
+        allowedUDPPorts = [ 53 ];
+      };
+    };
+}
