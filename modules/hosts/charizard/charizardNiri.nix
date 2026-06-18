@@ -16,9 +16,25 @@
             position = _: { props = { x = 2560; y = 0; }; };
           };
         };
+
+        # corectrl only enforces its saved GPU profile while running, so start it
+        # minimised to the tray at login. Appended to the base list rather than
+        # set directly: recursiveUpdate REPLACES lists (it only merges attrsets),
+        # so a bare assignment here would drop Noctalia + the sleep-lock that
+        # niriCommonSettings defines.
+        spawn-at-startup = niriCommonSettings.spawn-at-startup ++ [
+          [ "corectrl" "--minimize-systray" ]
+        ];
+
         binds."Mod+Shift+V" = _: {
           props.hotkey-overlay-title = "Toggle VRR (DP-1)";
           content.spawn-sh = "vrr-toggle";
+        };
+        # mangohud-toggle is provided by the gaming module's systemPackages;
+        # both modules land on charizard, so the command is on PATH here.
+        binds."Mod+Shift+O" = _: {
+          props.hotkey-overlay-title = "Toggle MangoHud overlay";
+          content.spawn-sh = "mangohud-toggle";
         };
       };
     };
