@@ -96,6 +96,7 @@
 
     # ── Overlay & post-processing config selection ───────────────────────────
     environment.sessionVariables = {
+      MANGOHUD = "1";
       MANGOHUD_CONFIGFILE = "${mangoHudConf}";
       VKBASALT_CONFIG_FILE = "${vkBasaltConf}";
     };
