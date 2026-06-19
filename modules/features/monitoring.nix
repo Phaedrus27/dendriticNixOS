@@ -1,29 +1,88 @@
 { self, inputs, ... }: {
   flake.nixosModules.monitoring = { config, pkgs, lib, ... }:
     let
-      # Services registered by other modules via
-      # dendriticNixOS.monitoring.watchedServices — see options below.
-      watched = config.dendriticNixOS.monitoring.watchedServices;
+      cfg = config.dendriticNixOS.monitoring;
 
-      # JSON-safe Discord notify, shared by all scripts via sourcing
+      watched = cfg.watchedServices;
+      disks   = cfg.watchedDisks;
+      nvmes   = cfg.watchedNvme;
+      fses    = cfg.watchedFilesystems;
+
+      # JSON-safe Discord notify, shared by all scripts via sourcing.
+      # USERNAME stamps a per-host sender name into every message, so one
+      # shared webhook still surfaces each host under its own identity.
       notifyLib = ''
         HOST="${config.networking.hostName}"
+        USERNAME="${cfg.discordUsername}"
         WEBHOOK=$(cat ${config.sops.secrets.discord_webhook.path})
         notify() {
-          ${pkgs.jq}/bin/jq -n --arg c "$1" '{content: $c}' \
+          ${pkgs.jq}/bin/jq -n --arg c "$1" --arg u "$USERNAME" \
+              '{content: $c, username: $u}' \
             | ${pkgs.curl}/bin/curl -s -X POST "$WEBHOOK" \
                 -H "Content-Type: application/json" -d @-
         }
       '';
+
+      # Shell lines that invoke a checker over a registered inventory list.
+      diskCalls = lib.concatMapStrings (d: "check_disk ${d}\n") disks;
+      nvmeCalls = lib.concatMapStrings (n: "check_nvme ${n}\n") nvmes;
+      fsCalls   = lib.concatMapStrings
+        (f: "check_fs ${f.mount} ${toString f.high} ${toString f.low}\n") fses;
     in {
-      # Stable identity so the module system deduplicates this module when
-      # it arrives via multiple import paths (seedbox, mediaServer, hosts).
+      # Stable identity in case a host and one of its role modules both pull
+      # monitoring into the same evaluation — the module system dedupes on key.
       key = "dendriticNixOS/monitoring";
 
-      options.dendriticNixOS.monitoring.watchedServices = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ ];
-        description = "Services that get instant OnFailure alerts and 15-min up/down polling.";
+      # ──── Options: hosts register their own inventory ────
+      options.dendriticNixOS.monitoring = {
+        watchedServices = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          default = [ ];
+          description = "Services that get instant OnFailure alerts and 15-min up/down polling.";
+        };
+
+        # Per-host Discord sender name. Defaults to the hostname so a shared
+        # webhook still distinguishes hosts; override for a prettier label.
+        discordUsername = lib.mkOption {
+          type = lib.types.str;
+          default = config.networking.hostName;
+          description = "Username stamped on this host's Discord notifications.";
+        };
+
+        watchedDisks = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          default = [ ];
+          example = [ "/dev/sda" "/dev/sdb" ];
+          description = "SATA/SAS device paths to SMART-check (health + reallocated sectors).";
+        };
+
+        watchedNvme = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          default = [ ];
+          example = [ "/dev/nvme0n1" ];
+          description = "NVMe device paths to SMART-check (health + media errors + wear).";
+        };
+
+        watchedFilesystems = lib.mkOption {
+          default = [ ];
+          description = "Mountpoints to watch for capacity, with hysteresis thresholds.";
+          type = lib.types.listOf (lib.types.submodule {
+            options = {
+              mount = lib.mkOption {
+                type = lib.types.str;
+                description = "Mountpoint to check with df.";
+              };
+              high = lib.mkOption {
+                type = lib.types.ints.between 1 100;
+                description = "Percent-used that triggers an alert.";
+              };
+              low = lib.mkOption {
+                type = lib.types.ints.between 1 100;
+                description = "Percent-used the host must fall back below to clear the alert.";
+              };
+            };
+          });
+        };
       };
 
       config = lib.mkMerge [
@@ -33,7 +92,126 @@
 
           environment.systemPackages = [ pkgs.smartmontools ];
 
-          # ── Disk health: SATA disks + NVMe, transition/increase-based ──
+          # ──── Generic failed-units watcher: catches what the service list misses ────
+          systemd.services.failed-units-monitor = {
+            description = "Alert on any newly failed systemd units";
+            serviceConfig = {
+              Type = "oneshot";
+              StateDirectory = "failed-units-monitor";
+              ExecStart = pkgs.writeShellScript "failed-units-monitor" ''
+                ${notifyLib}
+                STATE_FILE=/var/lib/failed-units-monitor/failed
+                CURR_FILE=$(mktemp)
+                ${pkgs.systemd}/bin/systemctl --failed --no-legend --plain \
+                  | ${pkgs.gawk}/bin/awk '{print $1}' | sort > "$CURR_FILE"
+                touch "$STATE_FILE"
+
+                NEW=$(${pkgs.coreutils}/bin/comm -13 "$STATE_FILE" "$CURR_FILE")
+                RESOLVED=$(${pkgs.coreutils}/bin/comm -23 "$STATE_FILE" "$CURR_FILE")
+
+                if [ -n "$NEW" ]; then
+                  notify "🚨 **Failed unit(s) on $HOST**:
+$NEW"
+                fi
+                if [ -n "$RESOLVED" ]; then
+                  notify "✅ **Unit(s) recovered on $HOST**:
+$RESOLVED"
+                fi
+
+                mv "$CURR_FILE" "$STATE_FILE"
+              '';
+            };
+          };
+          systemd.timers.failed-units-monitor = {
+            wantedBy = [ "timers.target" ];
+            timerConfig = { OnCalendar = "*:0/5"; Persistent = true; };
+          };
+
+          # ──── Boot notification: know immediately that a boot happened ────
+          systemd.services.boot-notify = {
+            description = "Discord notification on boot";
+            wantedBy = [ "multi-user.target" ];
+            after = [ "network-online.target" ];
+            wants = [ "network-online.target" ];
+            serviceConfig = {
+              Type = "oneshot";
+              ExecStart = pkgs.writeShellScript "boot-notify" ''
+                ${notifyLib}
+                BOOTED=$(${pkgs.procps}/bin/uptime -s)
+                FAILED=$(${pkgs.systemd}/bin/systemctl --failed --no-legend --plain \
+                  | ${pkgs.gawk}/bin/awk '{print $1}')
+                MSG="🔌 **$HOST booted** at $BOOTED."
+                if [ -n "$FAILED" ]; then
+                  MSG="$MSG
+⚠️ Failed units at boot:
+$FAILED"
+                fi
+                # Network may still be settling right after boot; retry
+                for i in 1 2 3 4 5 6; do
+                  if notify "$MSG"; then exit 0; fi
+                  sleep 10
+                done
+              '';
+            };
+          };
+
+          # ──── Instant crash alerts: event-driven OnFailure, no polling delay ────
+          systemd.services."notify-failure@" = {
+            description = "Discord failure notification for %i";
+            serviceConfig = {
+              Type = "oneshot";
+              ExecStart = pkgs.writeShellScript "notify-failure" ''
+                ${notifyLib}
+                UNIT="$1"
+                SERVICE="''${UNIT%.service}"
+                notify "🚨 **Service DOWN on $HOST**: $SERVICE failed (instant alert)."
+                # Pre-mark state so the polling monitor doesn't duplicate the alert
+                mkdir -p /var/lib/service-monitor
+                echo "down" > "/var/lib/service-monitor/$SERVICE"
+              '' + " %i";
+            };
+          };
+
+          # ──── Service up/down poller: recovery messages + safety net ────
+          # The roster is assembled from watchedServices registrations made
+          # by the modules that own each service (seedbox, arr, jellyfin, …).
+          systemd.services.service-monitor = {
+            description = "Monitor critical services and alert on state transitions";
+            serviceConfig = {
+              Type = "oneshot";
+              StateDirectory = "service-monitor";
+              ExecStart = pkgs.writeShellScript "service-monitor" ''
+                ${notifyLib}
+                STATE_DIR=/var/lib/service-monitor
+
+                check_service() {
+                  SERVICE=$1
+                  SF="$STATE_DIR/$SERVICE"
+                  PREV=$(cat "$SF" 2>/dev/null || echo "up")
+                  if ${pkgs.systemd}/bin/systemctl is-active --quiet "$SERVICE"; then
+                    CURR="up"; else CURR="down"; fi
+
+                  if [ "$CURR" = "down" ] && [ "$PREV" = "up" ]; then
+                    notify "🚨 **Service DOWN on $HOST**: $SERVICE is not running!"
+                  elif [ "$CURR" = "up" ] && [ "$PREV" = "down" ]; then
+                    DOWN_SINCE=$(${pkgs.coreutils}/bin/stat -c %y "$SF" 2>/dev/null | cut -d. -f1)
+                    notify "✅ **Service RECOVERED on $HOST**: $SERVICE is back up (was down since $DOWN_SINCE)."
+                  fi
+                  echo "$CURR" > "$SF"
+                }
+
+                ${lib.concatMapStrings (s: "check_service ${s}\n") watched}
+              '';
+            };
+          };
+          systemd.timers.service-monitor = {
+            wantedBy = [ "timers.target" ];
+            timerConfig = { OnCalendar = "*:0/15"; Persistent = true; };
+          };
+        }
+
+        # ──── Disk SMART health: only on hosts that registered disks/NVMe ────
+        (lib.mkIf (disks != [ ] || nvmes != [ ]) {
           systemd.services.disk-monitor = {
             description = "Disk health monitor with Discord alerts";
             serviceConfig = {
@@ -109,9 +287,7 @@
                   fi
                 }
 
-                check_disk /dev/sda
-                check_disk /dev/sdb
-                check_nvme /dev/nvme0n1
+                ${diskCalls}${nvmeCalls}
               '';
             };
           };
@@ -119,8 +295,10 @@
             wantedBy = [ "timers.target" ];
             timerConfig = { OnCalendar = "daily"; Persistent = true; };
           };
+        })
 
-          # ── Filesystem space: cache + root, hysteresis transitions ──
+        # ──── Filesystem space: only on hosts that registered filesystems ────
+        (lib.mkIf (fses != [ ]) {
           systemd.services.disk-space-monitor = {
             description = "Filesystem space monitor with Discord alerts";
             serviceConfig = {
@@ -146,8 +324,7 @@
                   fi
                 }
 
-                check_fs /          85 75
-                check_fs /mnt/cache 90 85
+                ${fsCalls}
               '';
             };
           };
@@ -155,130 +332,7 @@
             wantedBy = [ "timers.target" ];
             timerConfig = { OnCalendar = "hourly"; Persistent = true; };
           };
-
-          # ── Generic failed-units watcher: catches what the service list misses ──
-          systemd.services.failed-units-monitor = {
-            description = "Alert on any newly failed systemd units";
-            serviceConfig = {
-              Type = "oneshot";
-              StateDirectory = "failed-units-monitor";
-              ExecStart = pkgs.writeShellScript "failed-units-monitor" ''
-                ${notifyLib}
-                STATE_FILE=/var/lib/failed-units-monitor/failed
-                CURR_FILE=$(mktemp)
-                ${pkgs.systemd}/bin/systemctl --failed --no-legend --plain \
-                  | ${pkgs.gawk}/bin/awk '{print $1}' | sort > "$CURR_FILE"
-                touch "$STATE_FILE"
-
-                NEW=$(${pkgs.coreutils}/bin/comm -13 "$STATE_FILE" "$CURR_FILE")
-                RESOLVED=$(${pkgs.coreutils}/bin/comm -23 "$STATE_FILE" "$CURR_FILE")
-
-                if [ -n "$NEW" ]; then
-                  notify "🚨 **Failed unit(s) on $HOST**:
-$NEW"
-                fi
-                if [ -n "$RESOLVED" ]; then
-                  notify "✅ **Unit(s) recovered on $HOST**:
-$RESOLVED"
-                fi
-
-                mv "$CURR_FILE" "$STATE_FILE"
-              '';
-            };
-          };
-          systemd.timers.failed-units-monitor = {
-            wantedBy = [ "timers.target" ];
-            timerConfig = { OnCalendar = "*:0/5"; Persistent = true; };
-          };
-
-          # ── Boot notification: know immediately that a boot happened ──
-          systemd.services.boot-notify = {
-            description = "Discord notification on boot";
-            wantedBy = [ "multi-user.target" ];
-            after = [ "network-online.target" ];
-            wants = [ "network-online.target" ];
-            serviceConfig = {
-              Type = "oneshot";
-              ExecStart = pkgs.writeShellScript "boot-notify" ''
-                ${notifyLib}
-                BOOTED=$(${pkgs.procps}/bin/uptime -s)
-                FAILED=$(${pkgs.systemd}/bin/systemctl --failed --no-legend --plain \
-                  | ${pkgs.gawk}/bin/awk '{print $1}')
-                MSG="🔌 **$HOST booted** at $BOOTED."
-                if [ -n "$FAILED" ]; then
-                  MSG="$MSG
-⚠️ Failed units at boot:
-$FAILED"
-                fi
-                # Network may still be settling right after boot; retry
-                for i in 1 2 3 4 5 6; do
-                  if notify "$MSG"; then exit 0; fi
-                  sleep 10
-                done
-              '';
-            };
-          };
-
-          # ── Instant crash alerts: event-driven OnFailure, no polling delay ──
-          systemd.services."notify-failure@" = {
-            description = "Discord failure notification for %i";
-            serviceConfig = {
-              Type = "oneshot";
-              ExecStart = pkgs.writeShellScript "notify-failure" ''
-                ${notifyLib}
-                UNIT="$1"
-                SERVICE="''${UNIT%.service}"
-                notify "🚨 **Service DOWN on $HOST**: $SERVICE failed (instant alert)."
-                # Pre-mark state so the polling monitor doesn't duplicate the alert
-                mkdir -p /var/lib/service-monitor
-                echo "down" > "/var/lib/service-monitor/$SERVICE"
-              '' + " %i";
-            };
-          };
-
-          # ── Service up/down poller: recovery messages + safety net ──
-          # The roster is assembled from watchedServices registrations made
-          # by the modules that own each service (seedbox, arr, jellyfin, …).
-          systemd.services.service-monitor = {
-            description = "Monitor critical services and alert on state transitions";
-            serviceConfig = {
-              Type = "oneshot";
-              StateDirectory = "service-monitor";
-              ExecStart = pkgs.writeShellScript "service-monitor" ''
-                ${notifyLib}
-                STATE_DIR=/var/lib/service-monitor
-
-                check_service() {
-                  SERVICE=$1
-                  SF="$STATE_DIR/$SERVICE"
-                  PREV=$(cat "$SF" 2>/dev/null || echo "up")
-                  if ${pkgs.systemd}/bin/systemctl is-active --quiet "$SERVICE"; then
-                    CURR="up"; else CURR="down"; fi
-
-                  if [ "$CURR" = "down" ] && [ "$PREV" = "up" ]; then
-                    notify "🚨 **Service DOWN on $HOST**: $SERVICE is not running!"
-                  elif [ "$CURR" = "up" ] && [ "$PREV" = "down" ]; then
-                    DOWN_SINCE=$(${pkgs.coreutils}/bin/stat -c %y "$SF" 2>/dev/null | cut -d. -f1)
-                    notify "✅ **Service RECOVERED on $HOST**: $SERVICE is back up (was down since $DOWN_SINCE)."
-                  fi
-                  echo "$CURR" > "$SF"
-                }
-
-                ${lib.concatMapStrings (s: "check_service ${s}\n") watched}
-              '';
-            };
-          };
-          systemd.timers.service-monitor = {
-            wantedBy = [ "timers.target" ];
-            timerConfig = { OnCalendar = "*:0/15"; Persistent = true; };
-          };
-
-          # ── SnapRAID sync failure alert — enable when disk #3 arrives ──
-          # When you do: don't use `is-active` (oneshots are always inactive).
-          # Just attach the template:
-          #   systemd.services.snapraid-sync.unitConfig.OnFailure =
-          #     [ "notify-failure@%n.service" ];
-        }
+        })
 
         # OnFailure attachments for instant crash alerts, merged as a
         # separate fragment so the wholesale `systemd.services` assignment
