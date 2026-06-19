@@ -4,27 +4,29 @@
     # MangoHud + vkBasalt configs live in the Nix store and are selected via the
     # env vars further down — fully declarative, no ~/.config state to babysit.
     mangoHudConf = pkgs.writeText "MangoHud.conf" ''
-      # control socket: lets the niri bind toggle the HUD from outside the game,
-      # which works in native-Wayland titles where MangoHud's own key doesn't.
-      control=mangohud
-      no_display=1        # start hidden; the keybind reveals it
-
-      # Telemetry shown when visible
-      fps
-      frametime=1
-      frame_timing=1
-      gpu_stats
-      gpu_temp
-      cpu_stats
-      cpu_temp
-      ram
-      vram
-
-      # Cosmetic
-      font_size=20
-      position=top-left
-      background_alpha=0.4
-    '';
+          # control socket: lets the niri bind toggle the HUD from outside the game,
+          # which works in native-Wayland titles where MangoHud's own key doesn't.
+          control=mangohud
+          # Keep Proton's Wine helpers from grabbing the socket before the game.
+          # explorer.exe is in MangoHud's built-in blacklist; xalia.exe isn't, and
+          # it wins the race. Config blacklist appends to the built-in list.
+          blacklist=xalia.exe
+          no_display=1        # start hidden; the keybind reveals it
+          # Telemetry shown when visible
+          fps
+          frametime=1
+          frame_timing=1
+          gpu_stats
+          gpu_temp
+          cpu_stats
+          cpu_temp
+          ram
+          vram
+          # Cosmetic
+          font_size=20
+          position=top-left
+          background_alpha=0.4
+        '';
 
     vkBasaltConf = pkgs.writeText "vkBasalt.conf" ''
       # Opt in per game with ENABLE_VKBASALT=1 %command%. Chain more with a
