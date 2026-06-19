@@ -14,7 +14,6 @@
       self.nixosModules.keychron
       self.nixosModules.niriSession
       self.nixosModules.charizardNiri
-      self.nixosModules.tailscale
       self.nixosModules.base
       self.nixosModules.editingApps
     ];

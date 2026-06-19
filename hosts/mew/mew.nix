@@ -11,7 +11,6 @@
       self.nixosModules.syncthing
       self.nixosModules.workstation     
       self.nixosModules.niriSession
-      self.nixosModules.tailscale
       self.nixosModules.base
     ];
 

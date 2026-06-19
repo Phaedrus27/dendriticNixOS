@@ -1,5 +1,9 @@
 { ... }: {
   flake.nixosModules.base = { ... }: {
+    imports = [ 
+      self.nixosModules.tailscale 
+      ];
+
     # ── Firmware & memory ─────────────────────────────────────────────
     services.fwupd.enable = true;
     zramSwap.enable = true;
