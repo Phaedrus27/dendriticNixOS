@@ -6,7 +6,6 @@
       self.nixosModules.protonvpn
       self.nixosModules.qbittorrent
       self.nixosModules.unpackerr
-      self.nixosModules.monitoring
     ];
 
     dendriticNixOS.monitoring.watchedServices = [ "qbittorrent" "wg-vpn" ];
