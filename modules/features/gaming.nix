@@ -11,7 +11,7 @@
           # the race; mangohud-toggle broadcasts to every instance, and only the one
           # presenting frames (the game) visibly changes.
           control=mangohud-%p
-          no_display=1        # start hidden; the keybind reveals it
+          no_display=0        # start hidden; the keybind reveals it
           # Telemetry shown when visible
           fps
           frametime=1
@@ -130,19 +130,21 @@
       # works in native-Wayland titles where MangoHud's keybind capture fails.
       # ':hud;' = flip HUD visibility; ABSTRACT-CONNECT matches control=mangohud.
       (writeShellScriptBin "mangohud-toggle" ''
-        # control=mangohud-%p gives each MangoHud instance its own socket. Send
-        # the toggle to all of them; only the process presenting frames (the
-        # game) changes visibly — Proton's helper instances no-op.
-        socks=$(${pkgs.iproute2}/bin/ss -xl 2>/dev/null | grep -oE 'mangohud-[0-9]+')
-        if [ -z "$socks" ]; then
-          ${pkgs.libnotify}/bin/notify-send -t 1500 "MangoHud" "No overlay running"
-          exit 0
-        fi
-        for s in $socks; do
-          printf ':hud;' | ${pkgs.socat}/bin/socat - "ABSTRACT-CONNECT:$s" 2>/dev/null || true
-        done
-        ${pkgs.libnotify}/bin/notify-send -t 1000 "MangoHud" "Overlay toggled"
-      '')
+              # control=mangohud-%p gives each MangoHud instance its own socket. Send
+              # the toggle to all of them; only the process presenting frames (the
+              # game) changes visibly — Proton's helper instances no-op. Hold the
+              # connection open briefly: MangoHud only accepts the control client on
+              # its next presented frame, so a connect-and-close too fast loses the race.
+              socks=$(${pkgs.iproute2}/bin/ss -xl 2>/dev/null | grep -oE 'mangohud-[0-9]+')
+              if [ -z "$socks" ]; then
+                ${pkgs.libnotify}/bin/notify-send -t 1500 "MangoHud" "No overlay running"
+                exit 0
+              fi
+              for s in $socks; do
+                { printf ':hud;'; sleep 0.1; } | ${pkgs.socat}/bin/socat - "ABSTRACT-CONNECT:$s" 2>/dev/null || true
+              done
+              ${pkgs.libnotify}/bin/notify-send -t 1000 "MangoHud" "Overlay toggled"
+            '')
     ];
   };
 }
