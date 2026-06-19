@@ -10,8 +10,8 @@
           # the first to bind wins, and it usually isn't the game. Per-pid sidesteps
           # the race; mangohud-toggle broadcasts to every instance, and only the one
           # presenting frames (the game) visibly changes.
-          control=mangohud-%p
-          no_display=0        # start hidden; the keybind reveals it
+          no_display=1        # start hidden; the keybind reveals it
+          toggle_hud=Shift_R+F12
           # Telemetry shown when visible
           fps
           frametime=1
@@ -125,23 +125,6 @@
       nvtopPackages.amd
       stress-ng
       s-tui
-
-      # Toggles MangoHud from outside the game via its control socket, so it
-      # works in native-Wayland titles where MangoHud's keybind capture fails.
-      # ':hud;' = flip HUD visibility; ABSTRACT-CONNECT matches control=mangohud.
-      (writeShellScriptBin "mangohud-toggle" ''
-              log=/tmp/mangohud-toggle.log
-              {
-                echo "=== $(date +%T) press ==="
-                socks=$(${pkgs.iproute2}/bin/ss -xl 2>&1 | grep -oE 'mangohud-[0-9]+')
-                echo "sockets: [$socks]"
-                for s in $socks; do
-                  printf ':hud;' | ${pkgs.socat}/bin/socat -t1 - "ABSTRACT-CONNECT:$s"
-                  echo "  $s -> exit=$?"
-                done
-              } >>"$log" 2>&1
-              ${pkgs.libnotify}/bin/notify-send -t 1000 "MangoHud" "toggle ran"
-            '')
     ];
   };
 }

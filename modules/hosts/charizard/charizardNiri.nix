@@ -30,12 +30,6 @@
           props.hotkey-overlay-title = "Toggle VRR (DP-1)";
           content.spawn-sh = "vrr-toggle";
         };
-        # mangohud-toggle is provided by the gaming module's systemPackages;
-        # both modules land on charizard, so the command is on PATH here.
-        binds."Mod+Shift+O" = _: {
-          props.hotkey-overlay-title = "Toggle MangoHud overlay";
-          content.spawn-sh = "mangohud-toggle";
-        };
       };
     };
   };
