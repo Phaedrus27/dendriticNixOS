@@ -39,6 +39,23 @@
       firewall.enable = true;
     };
 
+    # ──── Monitoring inventory: what this host watches ────
+    # Service registrations come from the role modules (arr, seedbox, …);
+    # disks and filesystems are host hardware, so they live here.
+    # NOTE: /dev/sdX names assume stable enumeration — verify against lsblk.
+    dendriticNixOS.monitoring = {
+      discordUsername = "Squirtle";
+      watchedDisks = [ "/dev/sda" "/dev/sdb" ];
+      watchedNvme = [ "/dev/nvme0n1" ];
+      watchedFilesystems = [
+        { mount = "/";            high = 85; low = 75; }
+        { mount = "/mnt/cache";   high = 90; low = 85; }
+        { mount = "/mnt/disk1";   high = 90; low = 85; }
+        { mount = "/mnt/disk2";   high = 90; low = 85; }
+        { mount = "/mnt/storage"; high = 90; low = 85; }
+      ];
+    };
+
     sops.secrets.tailscale_authkey = { };
     dendriticNixOS.tailscale.authKeyFile = config.sops.secrets.tailscale_authkey.path;
 
