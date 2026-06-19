@@ -1,40 +1,29 @@
 { self, inputs, ... }: {
   flake.nixosModules.screenshot = { lib, pkgs, config, ... }: let
-    # Helper script for region capture — select area, copy to clipboard and save
+    # Region capture — select an area, save with timestamp, copy to clipboard
     screenshotRegion = pkgs.writeShellScriptBin "screenshot-region" ''
-      mkdir -p ~/Pictures/Screenshots
-      ${pkgs.wayshot}/bin/wayshot \
-        --slurp "$(${pkgs.slurp}/bin/slurp)" \
-        --stdout \
-        | tee ~/Pictures/Screenshots/$(date +%Y-%m-%d_%H-%M-%S).png \
-        | ${pkgs.wl-clipboard}/bin/wl-copy
+      set -eu
+      dir="$HOME/Pictures/Screenshots"
+      mkdir -p "$dir"
+      # Abort cleanly (no file) if the user cancels the selection with Escape
+      geometry=$(${pkgs.slurp}/bin/slurp) || exit 0
+      file="$dir/$(date +%Y-%m-%d_%H-%M-%S).png"
+      ${pkgs.grim}/bin/grim -g "$geometry" "$file"
+      ${pkgs.wl-clipboard}/bin/wl-copy < "$file"
     '';
 
-    # Helper script for fullscreen capture — copy to clipboard and save
+    # Fullscreen capture — save with timestamp, copy to clipboard
     screenshotFull = pkgs.writeShellScriptBin "screenshot-full" ''
-      mkdir -p ~/Pictures/Screenshots
-      ${pkgs.wayshot}/bin/wayshot \
-        --stdout \
-        | tee ~/Pictures/Screenshots/$(date +%Y-%m-%d_%H-%M-%S).png \
-        | ${pkgs.wl-clipboard}/bin/wl-copy
+      set -eu
+      dir="$HOME/Pictures/Screenshots"
+      mkdir -p "$dir"
+      file="$dir/$(date +%Y-%m-%d_%H-%M-%S).png"
+      ${pkgs.grim}/bin/grim "$file"
+      ${pkgs.wl-clipboard}/bin/wl-copy < "$file"
     '';
-
-    vrrToggle = pkgs.writeShellScriptBin "vrr-toggle" ''
-      out="DP-1"
-      if niri msg outputs \
-        | awk -v o="($out)" 'index($0,o){f=1} f && /Variable refresh rate:/{print; exit}' \
-        | grep -q 'enabled'; then
-        niri msg output "$out" vrr off
-        ${pkgs.libnotify}/bin/notify-send -t 1500 "VRR" "Off — $out"
-      else
-        niri msg output "$out" vrr on
-        ${pkgs.libnotify}/bin/notify-send -t 1500 "VRR" "On — $out"
-      fi
-    '';
-    
   in {
     environment.systemPackages = [
-      pkgs.wayshot
+      pkgs.grim
       pkgs.slurp
       pkgs.wl-clipboard
       screenshotRegion
