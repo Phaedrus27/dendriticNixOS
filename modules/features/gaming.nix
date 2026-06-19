@@ -40,11 +40,17 @@
 
     # ── Steam & Proton ───────────────────────────────────────────────────────
     programs.steam = {
-      enable = true;
-      protontricks.enable = true;
-      gamescopeSession.enable = true;
-      extraCompatPackages = [ pkgs.proton-ge-bin ];
-    };
+          enable = true;
+          protontricks.enable = true;
+          gamescopeSession.enable = true;
+          extraCompatPackages = [ pkgs.proton-ge-bin ];
+          # Put the MangoHud Vulkan layer inside Steam's FHS container. extraPkgs is
+          # the 32-bit (multilib) side — the half a 32-bit title like Arkham City
+          # actually loads — which is why the overlay worked on 64-bit vkcube but
+          # not here.
+          extraPackages = [ pkgs.mangohud ];
+          extraPkgs = pkgs: [ pkgs.mangohud ];
+        };
 
     # ── Gamescope & Gamemode ─────────────────────────────────────────────────
     programs.gamescope.enable = true;
