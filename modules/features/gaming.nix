@@ -11,7 +11,7 @@
           # the race; mangohud-toggle broadcasts to every instance, and only the one
           # presenting frames (the game) visibly changes.
           no_display=1        # start hidden; the keybind reveals it
-          toggle_hud=Shift_R+F12
+          toggle_hud=Shift_R+F11
           # Telemetry shown when visible
           fps
           frametime=1
