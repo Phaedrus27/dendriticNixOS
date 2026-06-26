@@ -64,7 +64,7 @@
     users.users.phaedrus = {
       isNormalUser = true;
       description = "phaedrus";
-      extraGroups = [ "networkmanager" "wheel" ];
+      extraGroups = [ "networkmanager" "wheel" "bluetooth" ];
     };
 
     # ── Common desktop packages ─────────────────────────────────────────
