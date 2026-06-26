@@ -65,8 +65,13 @@
           [
             (lib.getExe pkgs.swayidle)
             "-w"
-            "before-sleep"
-            "${lib.getExe self'.packages.myNoctalia} ipc call lockScreen lock"
+            # Turn displays off after 5 minutes idle (critical for OLED burn-in).
+            "timeout" "300" "${lib.getExe self'.packages.myNiri} msg action power-off-monitors"
+            "resume" "${lib.getExe self'.packages.myNiri} msg action power-on-monitors"
+            # Lock after 10 minutes idle.
+            "timeout" "600" "${lib.getExe self'.packages.myNoctalia} ipc call lockScreen lock"
+            # Always lock before system sleep regardless of idle timer state.
+            "before-sleep" "${lib.getExe self'.packages.myNoctalia} ipc call lockScreen lock"
           ]
         ];
 
