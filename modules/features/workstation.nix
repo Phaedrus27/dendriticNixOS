@@ -57,6 +57,15 @@
       }];
       ensureDefaultPrinter = "Brother_DCP-L2530DW";
     };
+
+    systemd.services.ensure-printers = {
+      after = [ "cups.service" ];
+      requires = [ "cups.service" ];
+      serviceConfig = {
+        Restart = "on-failure";
+        RestartSec = "30s";
+      };
+    };
     
     services.upower.enable = true;
 
