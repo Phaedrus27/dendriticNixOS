@@ -40,31 +40,36 @@
       pulse.enable = true;
     };
 
-    # ── Printing & power ────────────────────────────────────────────────
-    services.printing.enable = true;
-    services.avahi = {                     # promoted from charizard: resolves .local,
-      enable = true;                       # required for the deviceUri below
-      nssmdns4 = true;
-      openFirewall = true;                 # mDNS needs 5353/UDP both ways
-    };
+      # ── Printing & power ────────────────────────────────────────────────
+      services.printing.enable = true;
 
-    hardware.printers = {
-      ensurePrinters = [{
-        name = "Brother_DCP-L2530DW";
-        deviceUri = "ipp://192.168.1.140:631/ipp/print";   # IP (UniFi-reserved), not .local — mDNS unreliable, printer sleeps
-        model = "everywhere";
-        ppdOptions.PageSize = "A4";
-      }];
-      ensureDefaultPrinter = "Brother_DCP-L2530DW";
-    };
-
-    systemd.services.ensure-printers = {
-      after = [ "cups.service" ];
-      serviceConfig = {
-        Restart = "on-failure";
-        RestartSec = "30s";
+      services.avahi = {
+        enable = true;          # resolves .local for discovery; deviceUri below is IP-based
+        nssmdns4 = true;
+        openFirewall = true;    # mDNS needs 5353/UDP both ways
       };
-    };
+
+      hardware.printers = {
+        ensurePrinters = [{
+          name = "Brother_DCP-L2530DW";
+          deviceUri = "ipp://192.168.1.140:631/ipp/print";   # UniFi-reserved IP — .local unreliable, printer sleeps
+          model = "everywhere";
+          ppdOptions.PageSize = "A4";
+        }];
+        ensureDefaultPrinter = "Brother_DCP-L2530DW";
+      };
+
+      # ensure-printers calls lpadmin on every activation, which makes CUPS fetch the
+      # printer's IPP capabilities. A sleeping printer fails that fetch (exit 1) and
+      # fails the whole switch (exit-4). Treat exit 1 as success: registration only
+      # needs one successful fetch (persisted in /var/lib/cups), and the printer is
+      # usually asleep at rebuild time here.
+      # `after` (not `requires`) orders behind CUPS: ensure-printers cycles
+      # cups.service itself, and `requires` would send TERM when it stops.
+      systemd.services.ensure-printers = {
+        after = [ "cups.service" ];
+        serviceConfig.SuccessExitStatus = [ 0 1 ];
+      };
     
     services.upower.enable = true;
 
