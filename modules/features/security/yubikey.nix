@@ -2,18 +2,17 @@
   flake.nixosModules.yubikey = { pkgs, lib, ... }: {
 
     # ── FIDO2: interactive auth (SSH sk-keys, sudo, LUKS) ───────────────
-    # enable=true is REQUIRED for any pam_u2f line to be emitted. (enable=false
-    # + per-service u2fAuth=true emits NOTHING — verified the hard way.)
-    # enable defaults u2fAuth ON for every PAM service, so we opt OUT of the
-    # unlock path; sudo keeps the default-on grant → touch-to-sudo, no password.
+    # enable = true is required for pam_u2f to emit anything; enable = false with
+    # per-service u2fAuth = true emits nothing. With enable on, u2fAuth defaults
+    # ON for every PAM service, so the unlock path is opted out below while sudo
+    # keeps the default grant → touch-to-sudo, no password.
     security.pam.u2f = {
       enable = true;
       control = "sufficient";
       settings = {
         cue = true;
-        # Fixed origin: one enrollment works on every host, current and
-        # future. (Default pam://$HOSTNAME is why the old authfiles
-        # diverged per machine.)
+        # Fixed origin instead of the default pam://$HOSTNAME, so one enrollment
+        # is valid on every host rather than tied to a single machine.
         origin = "pam://phaedrus";
         appid = "pam://phaedrus";
         authfile = pkgs.writeText "u2f_mappings" ''
@@ -22,18 +21,17 @@
       };
     };
 
-    # Opt OUT of the unlock path — the screen lock / login defend physical
-    # presence, which a touch doesn't help (an attacker at the machine can
-    # touch the key too). Also the wake-from-sleep delay fix.
-    # NOTE: if noctalia's locker authenticates against a service other than
-    # these, add its name here — confirm post-rebuild with grep -l u2f /etc/pam.d/*
+    # Opt out of u2f on these services: at the physical machine a touch adds no
+    # security (anyone present can touch the key) and it avoids a wake-from-sleep
+    # delay. The locker (noctalia) authenticates against one of these; a locker
+    # on a different PAM service would also need opting out here.
     security.pam.services.login.u2fAuth = false;
     security.pam.services.greetd.u2fAuth = false;
-    security.pam.services.su.u2fAuth = false;      # add
-    security.pam.services.sshd.u2fAuth = false;    # add
-    # sudo keeps the default-on grant from enable=true (no explicit line needed).
+    security.pam.services.su.u2fAuth = false;
+    security.pam.services.sshd.u2fAuth = false;
+    # sudo is not listed: it keeps the default-on grant, giving touch-to-sudo.
 
-    # sk-key stubs use non-default filenames, so tell ssh to offer them.
+    # sk-key files use non-default names, so ssh is told to offer them.
     programs.ssh.extraConfig = ''
       IdentityFile ~/.ssh/id_yubikeyA
       IdentityFile ~/.ssh/id_yubikeyC
@@ -41,6 +39,20 @@
 
     # ── PIV: sops secret editing only ────────────────────────────────────
     services.pcscd.enable = true;
+
+    # age identity file, managed here so every workstation carries both keys and
+    # stays consistent. The AGE-PLUGIN-YUBIKEY-1 strings are not secret — they are
+    # slot pointers; decryption still requires the physical key + PIN + touch, the
+    # same trust level as the recipient pubkeys in .sops.yaml.
+    environment.etc."sops/age/keys.txt".text = ''
+      # yubikeyA — serial 31858399
+      AGE-PLUGIN-YUBIKEY-1MU0WVQVZL0L52YQPHZP2N
+      # yubikeyC — serial 29526888
+      AGE-PLUGIN-YUBIKEY-1DZ9UYQVZH527VUSA53X7X
+    '';
+
+    # sops CLI reads identities from here rather than ~/.config/sops/age.
+    environment.variables.SOPS_AGE_KEY_FILE = "/etc/sops/age/keys.txt";
 
     environment.systemPackages = with pkgs; [
       yubikey-manager
