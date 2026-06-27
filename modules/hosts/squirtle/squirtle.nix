@@ -8,7 +8,6 @@
       self.nixosModules.squirtleHardware
       self.nixosModules.squirtleStorage
       self.nixosModules.sops
-      self.nixosModules.squirtleSops
       self.nixosModules.samba
       self.nixosModules.mediaServer
       self.nixosModules.syncthing

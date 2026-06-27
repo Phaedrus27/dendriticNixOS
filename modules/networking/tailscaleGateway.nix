@@ -1,6 +1,6 @@
 { ... }:
 {
-  flake.modules.nixos.tailscale-gateway =
+  flake.modules.nixos.tailscaleGateway =
     { ... }:
     {
       # Route LAN traffic for tailnet peers and act as exit node.

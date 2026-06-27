@@ -1,8 +1,12 @@
 # pidgey hardware — Raspberry Pi 5, USB SSD boot
 { inputs, ... }:
 {
-  flake.modules.nixos.pidgey-hardware = {
+  flake.nixosModules.pidgeyHardware = { lib, ... }: {
     imports = [ inputs.nixos-hardware.nixosModules.raspberry-pi-5 ];
+
+    # aarch64 host; set here (not in the wrapper) to mirror the other hosts,
+    # which pin hostPlatform from their hardware module.
+    nixpkgs.hostPlatform = lib.mkDefault "aarch64-linux";
 
     # ──── Boot ────
     boot.loader.generic-extlinux-compatible.enable = true;
