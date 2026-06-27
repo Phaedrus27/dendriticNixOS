@@ -57,23 +57,21 @@
       commonSettings = {
 
         # ────────────────────────────  Startup / session  ────────────────────────────
-        spawn-at-startup = [
-          (lib.getExe self'.packages.myNoctalia)
-          # Lock before the system sleeps: run as a niri child so it inherits the
-          # Wayland session and holds a logind sleep inhibitor; -w waits so the
-          # lock paints before suspend.
-          [
-            (lib.getExe pkgs.swayidle)
-            "-w"
-            # Turn displays off after 5 minutes idle (critical for OLED burn-in).
-            "timeout" "300" "${lib.getExe self'.packages.myNiri} msg action power-off-monitors"
-            "resume" "${lib.getExe self'.packages.myNiri} msg action power-on-monitors"
-            # Lock after 10 minutes idle.
-            "timeout" "600" "${lib.getExe self'.packages.myNoctalia} ipc call lockScreen lock"
-            # Always lock before system sleep regardless of idle timer state.
-            "before-sleep" "${lib.getExe self'.packages.myNoctalia} ipc call lockScreen lock"
-          ]
-        ];
+      spawn-at-startup = [
+        (lib.getExe self'.packages.myNoctalia)
+        [
+          (lib.getExe pkgs.swayidle)
+          "-w"
+          # Turn displays off after 5 minutes idle (critical for OLED burn-in).
+          # Use bare pkgs.niri, NOT self'.packages.myNiri — referencing the wrapped
+          # package from inside commonSettings creates infinite recursion, since
+          # myNiri/myNiriMew are themselves built from commonSettings.
+          "timeout" "300" "${lib.getExe pkgs.niri} msg action power-off-monitors"
+          "resume" "${lib.getExe pkgs.niri} msg action power-on-monitors"
+          "timeout" "600" "${lib.getExe self'.packages.myNoctalia} ipc call lockScreen lock"
+          "before-sleep" "${lib.getExe self'.packages.myNoctalia} ipc call lockScreen lock"
+        ]
+      ];
 
         xwayland-satellite.path = lib.getExe pkgs.xwayland-satellite;
 
