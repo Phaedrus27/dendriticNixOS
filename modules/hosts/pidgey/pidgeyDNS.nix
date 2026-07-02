@@ -1,6 +1,6 @@
 { self, ... }:
 {
-  flake.modules.nixos.pidgeyDns =
+  flake.nixosModules.pidgeyDNS =
     { config, lib, pkgs, ... }:
     let
       # ──── Region records ────
@@ -55,7 +55,7 @@
 
        # pidgey's only secret; lives in its own low-value file encrypted to
        # pidgey + admin YubiKeys, keeping it out of the fleet's high-value
-        # secrets.yaml (which pidgey is deliberately NOT a recipient of).
+       # secrets.yaml (which pidgey is deliberately NOT a recipient of).
        sops.secrets.pihole_webpassword.sopsFile = "${self}/modules/secrets/pidgey.yaml";
 
       # DNS (53) and the admin UI (80) on the LAN NIC only.
