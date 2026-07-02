@@ -58,7 +58,7 @@
   };
 
   # ──── Shared identity: everything both stages must agree on ────
-  flake.nixosModules.pidgeyCore = { ... }: {
+  flake.nixosModules.pidgeyCore = { pkgs, ... }: {
     imports = [
       self.nixosModules.base
       self.nixosModules.pidgeyHardware
