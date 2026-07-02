@@ -35,6 +35,9 @@
       virtualisation.oci-containers.containers.pihole = {
         image = "pihole/pihole:2026.06.0"; # pin to a release tag; never :latest
         extraOptions = [ "--network=host" ];
+      # podman does not create missing bind-mount sources (docker does);
+      # Pi-hole's persistent state directory must exist before first start.
+      systemd.tmpfiles.rules = [ "d /var/lib/pihole/etc-pihole 0750 root root -" ];
 
         environment = {
           TZ = "Europe/Brussels";
