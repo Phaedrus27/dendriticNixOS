@@ -43,7 +43,7 @@
         "pidgey.home"      = "192.168.1.5";
       };
 
-      allRecords = kantoRecords // johtoRecords // hoennRecords;
+      allRecords = kantoRecords // johtoRecords // hoennRecords // homeRecords;
 
       regionsConf = pkgs.writeText "05-regions.conf"
         (lib.concatStringsSep "\n"
