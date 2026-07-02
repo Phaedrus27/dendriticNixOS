@@ -39,6 +39,11 @@
 
     swapDevices = [ ];
 
+    # Build aarch64 closures (pidgey) locally: heavyweight artifacts come from
+    # binary caches, but config-specific derivations and image assembly must
+    # still *execute* as aarch64 — qemu-user makes that possible on x86_64.
+    boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
+
     # ── Platform & firmware ──────────────────────────────────────────────────
     nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
     hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
