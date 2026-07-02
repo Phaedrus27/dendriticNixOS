@@ -35,5 +35,17 @@
     services.openssh.enable = true;
 
     system.stateVersion = "25.11";
+
+    # nixos-raspberrypi's binary cache, registered at the daemon level: flake
+    # nixConfig can't add substituters for non-trusted users, and charizard is
+    # the fleet's aarch64 image builder (pidgey now; bulbasaur/abra onboarding
+    # later). substituters merges with the module default, so cache.nixos.org
+    # stays first.
+    nix.settings = {
+      substituters = [ "https://nixos-raspberrypi.cachix.org" ];
+      trusted-public-keys = [
+        "nixos-raspberrypi.cachix.org-1:4iMO9LXa8BqhU+Rpg6LQKiGa2lsNh/j2oiYLNOQ5sPI="
+      ];
+    };
   };
 }
