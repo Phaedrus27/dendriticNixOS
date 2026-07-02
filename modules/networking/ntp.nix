@@ -1,6 +1,6 @@
 { ... }:
 {
-  flake.NixosModules.ntp =
+  flake.nixosModules.ntp =
     { ... }:
     {
       # Time source for the fleet; clients are pointed here via DHCP.
