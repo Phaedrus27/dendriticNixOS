@@ -2,6 +2,7 @@ keys:
   - &yubikey1 age1yubikey1qtkqf9lnj6clvyt4g7gyyavhyevdylk3pfqxckn7d5azdqj2hfyngkym037
   - &yubikey2 age1yubikey1qtvjaflu0lu329y43l562v2g2kcvgn3x0mpsuvc6v92xyf2c8yv327kdq00
   - &squirtle age1hjce6z08fe9f8tgn7cdh3ald0php42873rjhpfsu6gygg8n6hc8qnqn34f
+  - &pidgey age1ukc7nf5frf38z7k80cgn7reqw94eyfcx7gkl4fqcqcy9248ntpdshr77aw
   # &pidgey is added at first boot, derived from pidgey's host key:
   #   ssh-to-age < /etc/ssh/ssh_host_ed25519_key.pub
   # then append it to the pidgey.yaml key group below and run:
