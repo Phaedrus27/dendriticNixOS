@@ -22,6 +22,27 @@
         # Populated as IoT devices receive static leases.
       };
 
+      # ──── Service records — .home (function) ────
+      # .home is the permanent, region-neutral service domain.
+      # Services are consumed by apps, bookmarks, and household devices that
+      # are expensive to repoint, so their names never encode location; when
+      # a service moves hosts or VLANs, only the IP here changes. Kanto LAN
+      # IPs (not Tailscale 100.x): LAN clients connect directly, remote
+      # tailnet clients reach the same addresses via pidgey's advertised
+      # subnet route — one record set, no DERP detours.
+      homeRecords = {
+        "radarr.home"      = "192.168.1.7";
+        "sonarr.home"      = "192.168.1.7";
+        "prowlarr.home"    = "192.168.1.7";
+        "bazarr.home"      = "192.168.1.7";
+        "jellyfin.home"    = "192.168.1.7";
+        "qbittorrent.home" = "192.168.1.7";
+        "paperless.home"   = "192.168.1.7";
+        "squirtle.home"    = "192.168.1.7";
+        "unifi.home"       = "192.168.1.1";
+        "pidgey.home"      = "192.168.1.5";
+      };
+
       allRecords = kantoRecords // johtoRecords // hoennRecords;
 
       regionsConf = pkgs.writeText "05-regions.conf"
