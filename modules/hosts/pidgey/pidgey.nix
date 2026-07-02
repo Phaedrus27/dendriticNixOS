@@ -10,7 +10,7 @@
 #   ntp                chrony time server for the fleet
 { self, inputs, ... }:
 {
-  flake.nixosConfigurations.pidgey = inputs.nixpkgs.lib.nixosSystem {
+  flake.nixosConfigurations.pidgey = inputs.nixos-raspberrypi.lib.nixosSystem {
     modules = [ self.nixosModules.pidgeyConfiguration ];
   };
 
