@@ -64,6 +64,10 @@
       self.nixosModules.pidgeyHardware
     ];
 
+    # EEPROM tooling on the box itself: boot-order surgery during recovery
+    # shouldn't depend on network access to fetch the tool.
+    environment.systemPackages = [ pkgs.raspberrypi-eeprom ];
+
     # Not a workstation, so pidgey defines its own admin user; the fleet
     # sk-keys are authorized in base.nix.
     users.users.phaedrus = {
