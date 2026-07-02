@@ -25,3 +25,4 @@ creation_rules:
       - age:
           - *yubikey1
           - *yubikey2
+          - *pidgey
