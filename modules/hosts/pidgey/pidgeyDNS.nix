@@ -44,10 +44,6 @@
           FTLCONF_misc_etc_dnsmasq_d = "true";
         };
 
-      # podman does not create missing bind-mount sources (docker does);
-      # Pi-hole's persistent state directory must exist before first start.
-      systemd.tmpfiles.rules = [ "d /var/lib/pihole/etc-pihole 0750 root root -" ];
-
         # Supplies FTLCONF_webserver_api_password; kept out of the Nix store.
         environmentFiles = [ config.sops.secrets.pihole_webpassword.path ];
 
@@ -56,6 +52,10 @@
           "${regionsConf}:/etc/dnsmasq.d/05-regions.conf:ro"
         ];
       };
+
+      # podman does not create missing bind-mount sources (docker does);
+      # Pi-hole's persistent state directory must exist before first start.
+      systemd.tmpfiles.rules = [ "d /var/lib/pihole/etc-pihole 0750 root root -" ];
 
        # pidgey's only secret; lives in its own low-value file encrypted to
        # pidgey + admin YubiKeys, keeping it out of the fleet's high-value
