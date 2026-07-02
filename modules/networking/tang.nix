@@ -1,6 +1,6 @@
 { ... }:
 {
-  flake.modules.nixos.tang =
+  flake.nixosModules.tang =
     { ... }:
     {
       # LUKS unlock key server for squirtle/bulbasaur/charizard. Binds the LAN
