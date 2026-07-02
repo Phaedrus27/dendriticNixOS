@@ -33,7 +33,7 @@
       # Pi-hole has no NixOS module; it runs as a pinned OCI container on host
       # networking so FTL binds :53 directly on the LAN interface.
       virtualisation.oci-containers.containers.pihole = {
-        image = "pihole/pihole:2025.12.0"; # pin to a release tag; never :latest
+        image = "pihole/pihole:2026.06.0"; # pin to a release tag; never :latest
         extraOptions = [ "--network=host" ];
 
         environment = {
