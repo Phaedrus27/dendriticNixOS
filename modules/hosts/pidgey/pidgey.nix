@@ -54,6 +54,7 @@
       self.nixosModules.tailscaleGateway
       self.nixosModules.tang
       self.nixosModules.ntp
+      self.nixosModules.monitorying
     ];
   };
 
@@ -73,6 +74,22 @@
     users.users.phaedrus = {
       isNormalUser = true;
       extraGroups = [ "wheel" ];
+    };
+
+    # Monitoring's webhook declaration defaults to secrets.yaml, which pidgey
+    # is deliberately not a recipient of; the webhook is duplicated into
+    # pidgey.yaml (accepted trade: pidgey compromise burns one webhook —
+    # rotate on any incident).
+    sops.secrets.discord_webhook.sopsFile = "${self}/modules/secrets/pidgey.yaml";
+
+    dendriticNixOS.monitoring = {
+      discordUsername = "Pidgey";
+      # tangd deliberately unwatched: socket-activated per-connection
+      # template units don't fit the is-active polling model. Revisit
+      # with the clevis enrollment project.
+      watchedServices = [ "podman-pihole" "chronyd" "tailscaled" ];
+      watchedNvme = [ "/dev/nvme0n1" ];
+      watchedFilesystems = [ { mount = "/"; high = 85; low = 75; } ];
     };
 
     # Rebuild-from-origin, self-hosted: the deploy command ships inside the
