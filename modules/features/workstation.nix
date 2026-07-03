@@ -10,6 +10,13 @@
     # and GNOME expects it.
     networking.networkmanager.enable = true;
 
+    # systemd-resolved: the layer Tailscale installs split-DNS into on Linux.
+    # Without it, roaming machines resolve .home via whatever DHCP offers and
+    # never see the tailnet's DNS config. Workstation-scoped: NOT in the
+    # tailscale base module, because resolved's stub listener would contend
+    # for port 53 with Pi-hole on pidgey.
+    services.resolved.enable = true;
+
     # ── Locale & input ──────────────────────────────────────────────────
     time.timeZone = lib.mkDefault "Europe/Brussels";
     i18n.defaultLocale = lib.mkDefault "en_GB.UTF-8";
