@@ -17,6 +17,11 @@
     boot.loader.systemd-boot.enable = true;
     boot.loader.efi.canTouchEfiVariables = true;
 
+    # Roaming laptop: accepts pidgey's 192.168.1.0/24 route so .home records
+    # (kanto LAN IPs) resolve AND route when off-LAN. Cost: on home WiFi,
+    # LAN traffic may hairpin via pidgey — measured <date>, result <direct|hairpin>.
+    services.tailscale.useRoutingFeatures = "client";
+
     networking.hostName = "mew";
 
     # ── Host-specific hardware ──────────────────────────────────────────

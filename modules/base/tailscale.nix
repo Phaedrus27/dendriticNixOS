@@ -9,12 +9,15 @@
       services.tailscale = {
         enable = true;
 
-        # "client" (accept subnet routes) unless a host overrides — pidgey's
-        # gateway module sets "server". NOTE: useRoutingFeatures only applies
-        # --accept-routes through the autoconnect path, which requires
-        # authKeyFile; this fleet authenticates manually, so the flag is
-        # applied via extraSetFlags below instead.
-        useRoutingFeatures = lib.mkDefault "client";
+        # "none" by default: hosts inside pidgey's advertised subnet must NOT
+        # accept its route — on Linux the accepted route outranks the local
+        # LAN route, replies to LAN peers detour via the subnet router, and
+        # every inbound connection hangs (squirtle outage, Jul 2026). Roaming
+        # devices opt in with "client" in their host module. NOTE:
+        # useRoutingFeatures only applies --accept-routes through the
+        # autoconnect path, which requires authKeyFile; this fleet
+        # authenticates manually, so the flag is applied via extraSetFlags.
+        useRoutingFeatures = lib.mkDefault "none";
 
         # Accepting pidgey's 192.168.1.0/24 route is what makes the kanto-IP
         # service records reachable off-LAN; without it, roaming clients

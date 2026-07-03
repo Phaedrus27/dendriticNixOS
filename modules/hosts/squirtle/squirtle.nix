@@ -38,8 +38,6 @@
       firewall.enable = true;
     };
 
-    services.tailscale.useRoutingFeatures = "none";
-
     # ──── Monitoring inventory: what this host watches ────
     # Service registrations come from the role modules (arr, seedbox, …);
     # disks and filesystems are host hardware, so they live here.
