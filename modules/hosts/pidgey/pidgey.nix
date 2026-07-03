@@ -75,6 +75,12 @@
       extraGroups = [ "wheel" ];
     };
 
+    # Rebuild-from-origin, self-hosted: the deploy command ships inside the
+    # config it deploys. --refresh bypasses nix's flake tarball cache, which
+    # serves stale GitHub content for up to an hour otherwise.
+    environment.shellAliases.pidgey-up =
+      "sudo nixos-rebuild switch --refresh --flake github:Phaedrus27/dendriticNixOS#pidgey";
+
     networking = {
       hostName = "pidgey";
 
