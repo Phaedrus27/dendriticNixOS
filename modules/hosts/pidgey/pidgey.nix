@@ -54,7 +54,7 @@
       self.nixosModules.tailscaleGateway
       self.nixosModules.tang
       self.nixosModules.ntp
-      self.nixosModules.monitorying
+      self.nixosModules.monitoring
     ];
   };
 
