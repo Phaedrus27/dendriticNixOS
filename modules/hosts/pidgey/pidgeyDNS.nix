@@ -63,6 +63,11 @@
           FTLCONF_dns_listeningMode = "all";
           # Make FTL read the custom records mounted into /etc/dnsmasq.d.
           FTLCONF_misc_etc_dnsmasq_d = "true";
+          # Explicit upstreams — deliberate choice, not the image default
+          # (Google DNS), and never the UDR, so answers don't depend on
+          # router-side entries. Forced config: overrides and locks the
+          # setting in the admin UI.
+          FTLCONF_dns_upstreams = "1.1.1.1;9.9.9.9";
         };
 
         # Supplies FTLCONF_webserver_api_password; kept out of the Nix store.
