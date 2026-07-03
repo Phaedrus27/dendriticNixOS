@@ -7,34 +7,6 @@
       self.nixosModules.seedbox
     ];
 
-    services.dnsmasq = {
-      enable = true;
-      settings = {
-        server = [ "192.168.1.1" ];
-        listen-address = [ "127.0.0.1" "100.85.58.101" ];
-        # bind-dynamic instead of bind-interfaces: binds listen-addresses
-        # as their interfaces appear, so dnsmasq no longer dies at boot
-        # when tailscale0 isn't up yet.
-        bind-dynamic = true;
-        address = [
-          "/radarr.home/100.85.58.101"
-          "/sonarr.home/100.85.58.101"
-          "/prowlarr.home/100.85.58.101"
-          "/bazarr.home/100.85.58.101"
-          "/jellyfin.home/100.85.58.101"
-          "/qbittorrent.home/100.85.58.101"
-          "/squirtle.home/100.85.58.101"
-          "/paperless.home/100.85.58.101"
-          "/unifi.home/192.168.1.1"
-        ];
-      };
-    };
-
-    systemd.services.dnsmasq = {
-      after = [ "tailscaled.service" "network-online.target" ];
-      wants = [ "tailscaled.service" "network-online.target" ];
-    };
-
-    dendriticNixOS.monitoring.watchedServices = [ "dnsmasq" ];
+    dendriticNixOS.monitoring.watchedServices = [ ];
   };
 }
