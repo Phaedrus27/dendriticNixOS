@@ -9,7 +9,7 @@
       # tang module — the socket-activation attrs have shifted across versions.
       services.tang = {
         enable = true;
-        listenStream = [ "192.168.1.5:7654" ];
+        listenStream = [ "192.168.1.16:7654" ];
         ipAddressAllow = [ "192.168.1.0/24" ];
       };
 

@@ -9,7 +9,7 @@
       # servers VLAN (192.168.10.0/24) goes live.
       kantoRecords = {
         "unifi.kanto"    = "192.168.1.1";
-        "pidgey.kanto"   = "192.168.1.5";
+        "pidgey.kanto"   = "192.168.1.16";
         "squirtle.kanto" = "192.168.1.7";
       };
 
@@ -40,7 +40,7 @@
         "paperless.home"   = "192.168.1.7";
         "squirtle.home"    = "192.168.1.7";
         "unifi.home"       = "192.168.1.1";
-        "pidgey.home"      = "192.168.1.5";
+        "pidgey.home"      = "192.168.1.16";
       };
 
       allRecords = kantoRecords // johtoRecords // hoennRecords // homeRecords;

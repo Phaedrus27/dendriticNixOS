@@ -85,7 +85,7 @@
       # simplest on the scripted backend with a fixed address.
       useDHCP = false;
       interfaces.end0.ipv4.addresses = [
-        { address = "192.168.1.5"; prefixLength = 24; }
+        { address = "192.168.1.16"; prefixLength = 24; }
       ];
       defaultGateway = "192.168.1.1";
 
