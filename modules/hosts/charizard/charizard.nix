@@ -31,6 +31,8 @@
       nameservers = [ "1.1.1.1" "8.8.8.8" ];
     };
 
+    services.tailscale.useRoutingFeatures = "none";
+
     services.tuned.enable = true;
     services.openssh.enable = true;
 
