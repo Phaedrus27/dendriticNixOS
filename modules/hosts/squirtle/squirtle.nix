@@ -69,9 +69,6 @@
       };
     };
 
-    # Squirtle acts as a subnet router, advertising the local network to the tailnet
-    services.tailscale.useRoutingFeatures = "server";
-
     services.openssh.enable = true;
 
     environment.systemPackages = with pkgs; [
