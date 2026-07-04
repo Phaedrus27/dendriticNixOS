@@ -50,6 +50,44 @@
           (lib.mapAttrsToList (host: ip: "address=/${host}/${ip}") allRecords));
     in
     {
+
+      # ── Imperative Pi-hole state (NOT captured by this module) ─────────────
+      #
+      # WHY this comment exists: the container's persistent volume holds two
+      # config layers this flake does not describe — gravity.db (adlists,
+      # domain allow/deny lists, groups, client assignments) and pihole.toml
+      # (anything clicked in the web UI not overridden by an FTLCONF_* env var
+      # below). The volume survives rebuilds and container restarts, but a
+      # rebuild-from-scratch (NVMe failure, host reprovision) yields a STOCK
+      # Pi-hole: nothing errors, names just quietly resolve wrong. Restore the
+      # items below by hand in the web UI, then update this list and its date
+      # whenever UI-side config changes.
+      #
+      # Inventory (last verified 2026-07-04):
+      #
+      #   Local DNS records (Settings → Local DNS → DNS Records):
+      #     jellyfin.home → 192.168.1.7   # squirtle kanto IP, NOT its 100.x —
+      #                                   # Tailscale IP would DERP-relay LAN
+      #                                   # clients; remote clients reach this
+      #                                   # via pidgey's subnet advertisement
+      #
+      #   Adlists (Lists): stock default only (StevenBlack hosts).
+      #
+      #   Domain lists: empty — deliberately. Squirtle resolves through
+      #     Pi-hole with NO group exemption or whitelist: all *arr indexer
+      #     domains verified clean against the blocklists (2026-07-04, query
+      #     log audit + canary). If an indexer domain ever gets blocked,
+      #     whitelist that single domain here; do not exempt the whole host —
+      #     squirtle is the host whose DNS most deserves observability.
+      #
+      #   Groups / clients: none defined beyond defaults.
+      #
+      # Migration note: local DNS records can move into this module via
+      # FTLCONF_dns_hosts (env vars override the toml), which would shrink
+      # this list to genuinely disposable state. Backlog, not urgent.
+      # ────────────────────────────────────────────────────────────────────────
+
+      
       # ──── Pi-hole container ────
       # Pi-hole has no NixOS module; it runs as a pinned OCI container on host
       # networking so FTL binds :53 directly on the LAN interface.
