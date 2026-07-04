@@ -13,7 +13,13 @@
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
-        ExecStart = "${pkgs.iproute2}/bin/ip netns add vpn";
+        # Idempotent: `ip netns add` fails if the namespace already exists,
+        # which it will after an unclean stop (crash, power loss) since
+        # ExecStop never ran. Tolerating "already exists" makes every start
+        # converge to the same state instead of wedging the unit.
+        ExecStart = pkgs.writeShellScript "netns-vpn-start" ''
+          ${pkgs.iproute2}/bin/ip netns add vpn 2>/dev/null || true
+        '';
         ExecStop = "${pkgs.iproute2}/bin/ip netns del vpn";
       };
     };
@@ -29,6 +35,17 @@
         ExecStart = pkgs.writeShellScript "wg-vpn-start" ''
           #!${pkgs.bash}/bin/bash
           set -e
+          # Idempotency preamble: converge from any partial prior state.
+          # `set -e` means a mid-script failure (unreachable endpoint,
+          # missing secret) leaves links behind, and the unconditional
+          # `ip link add` calls below would then fail with "File exists"
+          # on every retry — the unit could never self-heal. Deleting
+          # leftovers first makes restart equivalent to first start.
+          # wg-vpn may be in the netns (moved) or the host (not yet moved),
+          # so try both; deleting veth-host destroys its peer with it.
+          ${pkgs.iproute2}/bin/ip -n vpn link del wg-vpn 2>/dev/null || true
+          ${pkgs.iproute2}/bin/ip link del wg-vpn 2>/dev/null || true
+          ${pkgs.iproute2}/bin/ip link del veth-host 2>/dev/null || true
           # DNS for VPN namespace — use ProtonVPN's DNS, bypass ISP
           ${pkgs.coreutils}/bin/mkdir -p /etc/netns/vpn
           echo "nameserver 10.2.0.1" > /etc/netns/vpn/resolv.conf
