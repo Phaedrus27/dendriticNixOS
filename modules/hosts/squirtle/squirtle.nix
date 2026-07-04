@@ -33,7 +33,13 @@
         prefixLength = 24;
       }];
       defaultGateway = "192.168.1.1";
-      nameservers = [ "1.1.1.1" "8.8.8.8" ];
+      # Pi-hole on pidgey, matching the fleet convention (see charizard).
+      # Normally shadowed: tailscaled's MagicDNS override (accept-dns
+      # defaults to true) routes host DNS to pidgey via 100.100.100.100
+      # anyway — this static entry is the bootstrap/fallback path for when
+      # tailscaled is down. qBittorrent is unaffected either way: its DNS
+      # is confined to the VPN netns resolver (see seedbox/qbittorrent.nix).
+      nameservers = [ "192.168.1.16" ];
       networkmanager.enable = true;
       firewall.enable = true;
     };
