@@ -38,6 +38,53 @@
         # resolv.conf bound above. Leading '-' = tolerate absence.
         InaccessiblePaths = [ "-/run/nscd" "-/run/systemd/resolve" ];
 
+        # Sandboxing: qBittorrent's core function is parsing attacker-
+        # controlled data (torrent metadata, peer wire protocol). Assume
+        # eventual exploitation; scope what a compromise can touch.
+
+        # Filesystem: whole OS read-only except state dir and the two
+        # download trees (completed on storage, incomplete on cache —
+        # completion is a cross-fs copy+delete, so both must be writable).
+        # A wrong/missing path here fails loudly: EROFS in the journal.
+        ProtectSystem = "strict";
+        ProtectHome = true;
+        ReadWritePaths = [
+          "/var/lib/qbittorrent"
+          "/mnt/storage/downloads"
+          "/mnt/cache/incomplete"
+        ];
+        PrivateTmp = true;
+
+        # No path from "code exec as qbittorrent" to "root": no suid/sgid
+        # execution, no capabilities, no gaining privileges post-exec.
+        NoNewPrivileges = true;
+        RestrictSUIDSGID = true;
+        CapabilityBoundingSet = "";
+
+        # Kernel attack-surface reduction.
+        ProtectKernelTunables = true;
+        ProtectKernelModules = true;
+        ProtectKernelLogs = true;
+        ProtectControlGroups = true;
+        ProtectClock = true;
+        ProtectHostname = true;
+        PrivateDevices = true;
+        RestrictNamespaces = true;  # blocks the *process* creating new
+                                    # namespaces; joining /run/netns/vpn is
+                                    # done by systemd before exec, unaffected
+        LockPersonality = true;
+        RestrictRealtime = true;
+        MemoryDenyWriteExecute = true;  # no W|X memory; qbittorrent-nox has
+                                        # no JIT — first suspect if it ever
+                                        # crashes on start after an update
+        RestrictAddressFamilies = [
+          "AF_INET" "AF_INET6"
+          "AF_UNIX"     # journal logging
+          "AF_NETLINK"  # libtorrent enumerates interfaces/routes via netlink
+        ];
+        SystemCallArchitectures = "native";
+        SystemCallFilter = [ "@system-service" ];
+
         ExecStart = "${pkgs.qbittorrent-nox}/bin/qbittorrent-nox --webui-port=8080 --confirm-legal-notice";
       };
     };
