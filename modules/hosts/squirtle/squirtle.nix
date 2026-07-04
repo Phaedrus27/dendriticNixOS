@@ -87,7 +87,7 @@
       ncdu
     ];
 
-    security.sudo.wheelNeedsPassword = false;
+    security.sudo.wheelNeedsPassword = true;
 
     system.stateVersion = "25.11";
   };
