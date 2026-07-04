@@ -69,6 +69,12 @@
         ProtectClock = true;
         ProtectHostname = true;
         PrivateDevices = true;
+        # /proc hygiene: hide other processes' entries (invisible = can
+        # only see its own), and mount /proc with only PID directories —
+        # no /proc/meminfo, /proc/cpuinfo, /proc/net etc. First suspect
+        # if the service ever fails post-update with ENOENT on /proc/*.
+        ProtectProc = "invisible";
+        ProcSubset = "pid";
         RestrictNamespaces = true;  # blocks the *process* creating new
                                     # namespaces; joining /run/netns/vpn is
                                     # done by systemd before exec, unaffected
