@@ -86,7 +86,13 @@
       lsof
       ncdu
     ];
-
+    
+    # Sudo requires the account password (set 2026-07-04, while sudo was
+    # still free — order matters: flipping this first would have removed
+    # the only escalation path). Squirtle holds the fleet's sops age key;
+    # passwordless escalation made any code running as phaedrus
+    # root-equivalent. SSH stays key-only (FIDO2), so the password's sole
+    # exposure is this prompt. Root has no password: su is dead by design.
     security.sudo.wheelNeedsPassword = true;
 
     system.stateVersion = "25.11";

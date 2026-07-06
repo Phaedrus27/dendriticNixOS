@@ -3,7 +3,7 @@
   flake.nixosModules.tang =
     { ... }:
     {
-      # LUKS unlock key server for squirtle/bulbasaur/charizard. Binds the LAN
+      # LUKS unlock key server for charizard. Binds the LAN
       # IP and accepts only LAN clients, so bound disks cannot unlock off the
       # home network. Verify listenStream/ipAddressAllow against the channel's
       # tang module — the socket-activation attrs have shifted across versions.

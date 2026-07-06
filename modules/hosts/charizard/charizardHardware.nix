@@ -3,7 +3,7 @@
     imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
 
     # ── Boot & initrd ────────────────────────────────────────────────────────
-    boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" ];
+    boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" "atlantic" ];
     boot.initrd.kernelModules = [ ];
     boot.kernelModules = [ "kvm-amd" ];
     boot.extraModulePackages = [ ];
@@ -20,6 +20,37 @@
       device = "/dev/disk/by-uuid/bb59877a-e6fb-443d-af1e-485147ca43f2";
       crypttabExtraOpts = [ "fido2-device=auto" ];
     };
+
+    # ── Networked LUKS unlock (Tang on pidgey) ───────────────────────────────
+    # clevis is attempted first; on failure (pidgey/tang down) systemd-cryptsetup
+    # falls through to the existing fido2-device=auto / passphrase flow, so the
+    # only hard dependency added is on the *unattended* path. Paired with WOL
+    # below, a powered-off charizard is remotely bootable to the greeter.
+    # Revocation: cryptsetup luksKillSlot <dev> <N> + delete the JWE.   ← real slot no.
+
+    # Mirror the stage-2 static address: the unlock must not additionally depend
+    # on the UDR's DHCP being healthy at boot.
+    boot.initrd.systemd.network = {
+      enable = true;
+      networks."10-lan" = {
+        matchConfig.Name = "enp7s0";
+        address = [ "192.168.1.6/24" ];
+        routes = [ { Gateway = "192.168.1.1"; } ];
+      };
+    };
+
+    # JWE is ciphertext bound to pidgey's tang keys: safe in git, safe in the
+    # initrd on unencrypted /boot. Re-enroll if /var/lib/tang is ever lost.
+    boot.initrd.clevis = {
+      enable = true;
+      devices."luks-bb59877a-e6fb-443d-af1e-485147ca43f2".secretFile = ./charizard-root.jwe;
+    };
+
+    # WOL: udev re-arms magic-packet wake every boot — the atlantic driver
+    # currently defaults to "g", but pin it rather than trust a driver default
+    # across kernel bumps. Firmware half lives in BIOS: PCI-E power-on, ErP off.
+    # Verify: ethtool enp7s0 | grep Wake-on   → "g"
+    networking.interfaces.enp7s0.wakeOnLan.enable = true;
 
     # ── Filesystems ──────────────────────────────────────────────────────────
     fileSystems."/" = {
