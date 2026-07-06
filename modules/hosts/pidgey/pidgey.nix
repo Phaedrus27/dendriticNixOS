@@ -136,8 +136,10 @@
     # pidgey is scoped out of the high-value secret set, so it joins the
     # tailnet manually (`tailscale up`) at bring-up, not via a sops authkey.
 
-    # No data-bearing services → no restic target; the only durable state is
-    # this configuration, tracked in git.
+    # Durable state: this configuration (git) plus /var/lib/tang — the tang
+    # keypair there is pinned by charizard's committed JWE. Loss is low-stakes
+    # (charizard falls back to FIDO2/passphrase, then re-run clevis encrypt
+    # against the regenerated keys), so still no restic target; accepted trade.
     system.stateVersion = "25.11";
   };
 }

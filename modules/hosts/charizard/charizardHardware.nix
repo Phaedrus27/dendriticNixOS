@@ -26,7 +26,7 @@
     # falls through to the existing fido2-device=auto / passphrase flow, so the
     # only hard dependency added is on the *unattended* path. Paired with WOL
     # below, a powered-off charizard is remotely bootable to the greeter.
-    # Revocation: cryptsetup luksKillSlot <dev> <N> + delete the JWE.   ← real slot no.
+    # Revocation: cryptsetup luksKillSlot <dev> <4> + delete the JWE.
 
     # Mirror the stage-2 static address: the unlock must not additionally depend
     # on the UDR's DHCP being healthy at boot.
@@ -43,6 +43,7 @@
     # initrd on unencrypted /boot. Re-enroll if /var/lib/tang is ever lost.
     boot.initrd.clevis = {
       enable = true;
+      useTang = true;
       devices."luks-bb59877a-e6fb-443d-af1e-485147ca43f2".secretFile = ./charizard-root.jwe;
     };
 
