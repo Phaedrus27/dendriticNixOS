@@ -13,12 +13,16 @@
       "amdgpu.ppfeaturemask=0xffffffff"    # unlock GPU OC/UV controls
     ];
 
-    # Required for FIDO2 LUKS unlock at boot
     boot.initrd.systemd.enable = true;
     boot.initrd.luks.fido2Support = false;
     boot.initrd.luks.devices."luks-bb59877a-e6fb-443d-af1e-485147ca43f2" = {
       device = "/dev/disk/by-uuid/bb59877a-e6fb-443d-af1e-485147ca43f2";
-      crypttabExtraOpts = [ "fido2-device=auto" ];
+      # WHY no fido2-device=auto: that option repurposes any crypttab key
+      # file as FIDO2 challenge material — which hijacked clevis's decrypted
+      # key (delivered as the key file) so it was never tried as a passphrase,
+      # leaving boot stuck at the token prompt (2026-07-06). The YubiKeys are
+      # systemd-cryptenroll LUKS2 header tokens, auto-discovered by
+      # systemd-cryptsetup, so the touch/passphrase fallback needs no option.
     };
 
     # ── Networked LUKS unlock (Tang on pidgey) ───────────────────────────────
