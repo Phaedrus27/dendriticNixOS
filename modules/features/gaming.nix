@@ -4,14 +4,15 @@
     # MangoHud + vkBasalt configs live in the Nix store and are selected via the
     # env vars further down — fully declarative, no ~/.config state to babysit.
     mangoHudConf = pkgs.writeText "MangoHud.conf" ''
-          # Per-instance control socket (mangohud-<pid>). A fixed name collides:
-          # Proton spawns several Vulkan processes (xalia.exe, the game, …) and each
-          # opens control= during config parse — before any blacklist applies — so
-          # the first to bind wins, and it usually isn't the game. Per-pid sidesteps
-          # the race; mangohud-toggle broadcasts to every instance, and only the one
-          # presenting frames (the game) visibly changes.
-          no_display=1        # start hidden; the keybind reveals it
+          # MANGOHUD=1 (sessionVariables) loads the layer into every Vulkan app;
+          # no_display keeps it hidden until toggled. Keybinds are read by MangoHud
+          # itself, not the compositor: keysyms are XKB names, so Shift_R matches
+          # right Shift only.
+          no_display=1
           toggle_hud=Shift_R+F11
+          # Displace toggle_hud_position: its default is Shift_R+F11, which would
+          # fire both actions on the toggle combo.
+          toggle_hud_position=Shift_L+F11
           # Telemetry shown when visible
           fps
           frametime=1
@@ -40,11 +41,11 @@
 
     # ── Steam & Proton ───────────────────────────────────────────────────────
     programs.steam = {
-          enable = true;
-          protontricks.enable = true;
-          gamescopeSession.enable = true;
-          extraCompatPackages = [ pkgs.proton-ge-bin ];
-        };
+      enable = true;
+      protontricks.enable = true;
+      gamescopeSession.enable = true;
+      extraCompatPackages = [ pkgs.proton-ge-bin ];
+    };
 
     # ── Gamescope & Gamemode ─────────────────────────────────────────────────
     programs.gamescope.enable = true;
@@ -119,6 +120,7 @@
 
       # Vulkan
       vkbasalt            # post-processing layer (sharpening, AA)
+      vulkan-tools        # vkcube: minimal known-good overlay canary
 
       # Monitoring & profiling
       lm_sensors
