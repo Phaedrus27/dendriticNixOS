@@ -11,6 +11,12 @@
     };
     users.groups.qbittorrent = {};
 
+    # WHY: the sandbox bind-mounts these paths at spawn; without an
+      # explicit ordering dependency the unit races the (nofail, fuse)
+      # mergerfs mount at boot and fails NAMESPACE — observed 2026-07-16
+      # when new PCI enumeration slowed mount assembly.
+      unitConfig.RequiresMountsFor = [ "/mnt/storage/downloads" "/mnt/cache/incomplete" ];
+
     systemd.services.qbittorrent = {
       description = "qBittorrent in VPN namespace";
       after = [ "wg-vpn.service" "mnt-cache.mount" "mnt-storage.mount" ];
