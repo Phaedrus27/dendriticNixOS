@@ -133,6 +133,13 @@
     # FIDO2 sk-keys; matches squirtle's headless posture.
     security.sudo.wheelNeedsPassword = false;
 
+    # WHY: deploys are pushed from charizard as phaedrus; without trusted-user
+    # status, locally-built (unsigned) store paths are refused by the daemon
+    # and any deploy whose delta isn't fully cache-substitutable fails.
+    # trusted-users is root-equivalent for the nix daemon — acceptable here:
+    # phaedrus is the sole admin and already wheel on this host.
+    nix.settings.trusted-users = [ "phaedrus" ];
+
     # pidgey is scoped out of the high-value secret set, so it joins the
     # tailnet manually (`tailscale up`) at bring-up, not via a sops authkey.
 
