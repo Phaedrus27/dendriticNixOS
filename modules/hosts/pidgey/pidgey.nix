@@ -112,11 +112,6 @@
       ];
       defaultGateway = "192.168.1.1";
 
-      # pidgey must never accept tailnet DNS: the tailnet's global nameserver IS
-      # pidgey's pi-hole, and self-resolution via the container creates a boot/
-      # restart deadlock (host DNS dies whenever the podman container is down).
-      services.tailscale.extraSetFlags = [ "--accept-dns=false" ];
-
       # Resolve via upstream, never pidgey's own Pi-hole: keeps resolution
       # (channel updates, container pulls) working when the pihole container
       # is down, and avoids a boot-time dependency on itself.
@@ -124,6 +119,11 @@
 
       firewall.enable = true;
     };
+
+      # pidgey must never accept tailnet DNS: the tailnet's global nameserver IS
+      # pidgey's pi-hole, and self-resolution via the container creates a boot/
+      # restart deadlock (host DNS dies whenever the podman container is down).
+      services.tailscale.extraSetFlags = [ "--accept-dns=false" ];
 
     # Headless infra node — SSH is the only console. Hardening lives in base.
     services.openssh.enable = true;
