@@ -13,6 +13,13 @@
       description = "Unpackerr - Extract downloads for Sonarr and Radarr";
       after = [ "network.target" "sonarr.service" "radarr.service" ];
       wantedBy = [ "multi-user.target" ];
+      # WHY: the sandbox bind-mounts ReadWritePaths at spawn; without an
+      # explicit mount dependency the unit races the (nofail, fuse)
+      # mergerfs assembly at boot and fails NAMESPACE — qbittorrent lost
+      # exactly this race 2026-07-16; unpackerr only won it by luck of
+      # its later start. Keep in lockstep with ReadWritePaths (both move
+      # to /mnt/scratch when the churn drive lands).
+      unitConfig.RequiresMountsFor = [ "/mnt/storage/downloads" ];
       environment = {
         UN_SONARR_0_URL = "http://localhost:8989";
         UN_SONARR_0_PATHS_0 = "/mnt/storage/downloads";
@@ -26,14 +33,6 @@
         User = "unpackerr";
         Group = "media";
         Restart = "on-failure";
-
-      # WHY: the sandbox bind-mounts ReadWritePaths at spawn; without an
-      # explicit mount dependency the unit races the (nofail, fuse)
-      # mergerfs assembly at boot and fails NAMESPACE — qbittorrent lost
-      # exactly this race 2026-07-16; unpackerr only won it by luck of
-      # its later start. Keep in lockstep with ReadWritePaths (both move
-      # to /mnt/scratch when the churn drive lands).
-      unitConfig.RequiresMountsFor = [ "/mnt/storage/downloads" ];
 
         # Sandboxing: unpackerr feeds attacker-chosen archives to unrar,
         # the classic path-traversal/RCE surface (CVE-2022-30333 class).
