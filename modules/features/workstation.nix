@@ -18,7 +18,6 @@
     services.resolved.enable = true;
 
     # ── Locale & input ──────────────────────────────────────────────────
-    time.timeZone = lib.mkDefault "Europe/Brussels";
     i18n.defaultLocale = lib.mkDefault "en_GB.UTF-8";
     services.xserver.xkb = {
       layout = lib.mkDefault "fr";

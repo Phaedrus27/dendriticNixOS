@@ -8,6 +8,8 @@
     services.fwupd.enable = true;
     zramSwap.enable = true;
 
+    time.timeZone = lib.mkDefault "Europe/Brussels";
+
     # ── Nix itself ────────────────────────────────────────────────────
     # Declared system-wide so fresh installs work day one,
     # instead of riding an imperative ~/.config/nix/nix.conf.
