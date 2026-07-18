@@ -105,7 +105,7 @@
     systemd.timers.snapraid-sync = {
       wantedBy = [ "timers.target" ];
       timerConfig = {
-        OnCalendar = "daily";
+      OnCalendar = "00:00";   # after backup.timer (23:00) — order is load-bearing
         Persistent = true;
       };
     };

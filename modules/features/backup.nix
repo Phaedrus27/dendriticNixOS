@@ -35,7 +35,10 @@
     systemd.timers.backup = {
       wantedBy = [ "timers.target" ];
       timerConfig = {
-        OnCalendar = "daily";
+        # WHY: fires before snapraid's midnight sync so each night's parity
+        # pass covers that night's fresh backup data — same-time firing had
+        # restic writing into the pool mid-parity-computation.
+        OnCalendar = "23:00";
         Persistent = true;
       };
     };
