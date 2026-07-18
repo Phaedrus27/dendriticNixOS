@@ -51,7 +51,14 @@
       # is confined to the VPN netns resolver (see seedbox/qbittorrent.nix).
       nameservers = [ "192.168.1.16" ];
       networkmanager.enable = true;
-      firewall.enable = true;
+
+      # ──── Firewall ────
+      firewall = {
+        enable = true;
+        # Jellyfin HTTP — LAN media clients (Shield, charizard). Swept out
+        # during the DNS-demotion hardening pass; do not remove again.
+        allowedTCPPorts = [ 8096 ];
+      };
     };
 
     # ──── Monitoring inventory: what this host watches ────
