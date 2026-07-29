@@ -43,6 +43,25 @@
         overview-open-close.spring = _: { props = { damping-ratio = 1.0; stiffness = 900; epsilon = 0.0001; }; };
       };
 
+      # ──── swayidle command ────
+      # Split base (DPMS) from lock (idle + before-sleep) so a per-host module can
+      # opt out of auto-lock without re-stating the DPMS args. Stream hosts run
+      # swayidleBase alone; every other host runs base ++ lock.
+      swayidleBase = [
+        (lib.getExe pkgs.swayidle)
+        "-w"
+        # Turn displays off after 5 minutes idle (critical for OLED burn-in).
+        # Use bare pkgs.niri, NOT self'.packages.myNiri — referencing the wrapped
+        # package from inside commonSettings creates infinite recursion, since
+        # myNiri/myNiriMew are themselves built from commonSettings.
+        "timeout" "300" "${lib.getExe pkgs.niri} msg action power-off-monitors"
+        "resume" "${lib.getExe pkgs.niri} msg action power-on-monitors"
+      ];
+      swayidleLock = [
+        "timeout" "600" "${lib.getExe self'.packages.myNoctalia} ipc call lockScreen lock"
+        "before-sleep" "${lib.getExe self'.packages.myNoctalia} ipc call lockScreen lock"
+      ];
+
       # ══════════════════════════════════════════════════════════════════
       #  commonSettings — host-agnostic niri config (one attrset → wrapper)
       #  Sections, in order:
@@ -59,18 +78,7 @@
         # ────────────────────────────  Startup / session  ────────────────────────────
       spawn-at-startup = [
         (lib.getExe self'.packages.myNoctalia)
-        [
-          (lib.getExe pkgs.swayidle)
-          "-w"
-          # Turn displays off after 5 minutes idle (critical for OLED burn-in).
-          # Use bare pkgs.niri, NOT self'.packages.myNiri — referencing the wrapped
-          # package from inside commonSettings creates infinite recursion, since
-          # myNiri/myNiriMew are themselves built from commonSettings.
-          "timeout" "300" "${lib.getExe pkgs.niri} msg action power-off-monitors"
-          "resume" "${lib.getExe pkgs.niri} msg action power-on-monitors"
-          "timeout" "600" "${lib.getExe self'.packages.myNoctalia} ipc call lockScreen lock"
-          "before-sleep" "${lib.getExe self'.packages.myNoctalia} ipc call lockScreen lock"
-        ]
+        (swayidleBase ++ swayidleLock)
       ];
 
         xwayland-satellite.path = lib.getExe pkgs.xwayland-satellite;
@@ -312,6 +320,7 @@
     {
       # Shared base, consumed by the per-host niri modules (charizard, mew).
       _module.args.niriCommonSettings = commonSettings;
+      _module.args.niriSwayidleBase = swayidleBase;
 
       packages.myNiri = inputs.wrapper-modules.wrappers.niri.wrap {
         inherit pkgs;

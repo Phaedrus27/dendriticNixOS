@@ -1,5 +1,5 @@
 { self, inputs, ... }: {
-  perSystem = { pkgs, lib, self', niriCommonSettings, ... }: {
+  perSystem = { pkgs, lib, self', niriCommonSettings, niriSwayidleBase, ... }: {
     packages.myNiriCharizard = inputs.wrapper-modules.wrappers.niri.wrap {
       inherit pkgs;
       settings = lib.recursiveUpdate niriCommonSettings {
@@ -20,11 +20,23 @@
         # corectrl only enforces its saved GPU profile while running, so start it
         # minimised to the tray at login. Appended to the base list rather than
         # set directly: recursiveUpdate REPLACES lists (it only merges attrsets),
-        # so a bare assignment here would drop Noctalia + the sleep-lock that
+        # so a bare assignment here would drop Noctalia + the swayidle entry that
         # niriCommonSettings defines.
-        spawn-at-startup = niriCommonSettings.spawn-at-startup ++ [
-          [ "corectrl" "--minimize-systray" ]
-        ];
+        #
+        # Swap the shared swayidle invocation for its lock-free base: this box
+        # hosts headless game streaming, LUKS covers at-rest theft, and auto-lock
+        # only ever blocked a remote Moonlight wake-into-stream. Match on the
+        # swayidle binary (not list position) so it survives future base-arg
+        # changes; every other shared entry flows through untouched.
+        spawn-at-startup =
+          (map (e:
+            if lib.isList e && lib.elem (lib.getExe pkgs.swayidle) e
+            then niriSwayidleBase
+            else e)
+            niriCommonSettings.spawn-at-startup)
+          ++ [
+            [ "corectrl" "--minimize-systray" ]
+          ];
 
         binds."Mod+Shift+V" = _: {
           props.hotkey-overlay-title = "Toggle VRR (DP-1)";
