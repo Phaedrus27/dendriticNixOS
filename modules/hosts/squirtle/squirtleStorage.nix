@@ -55,13 +55,16 @@
     };
 
     # ──── Directory ownership ────
-    # Pre-create required directories with correct ownership
+    # Pre-create required directories with correct ownership.
+    # phone-backup is 0750 (private): it holds zubat's Seedvault dump, which
+    # has no business being group/world-readable the way media dirs are.
     systemd.tmpfiles.rules = [
-      "d /mnt/cache/downloads  0775 qbittorrent media -"
-      "d /mnt/cache/incomplete 0775 qbittorrent media -"
-      "d /mnt/storage/tv       0775 sonarr       media -"
-      "d /mnt/storage/movies   0775 radarr        media -"
-      "d /mnt/storage/backups 0775 phaedrus users -"
+      "d /mnt/cache/downloads    0775 qbittorrent media -"
+      "d /mnt/cache/incomplete   0775 qbittorrent media -"
+      "d /mnt/cache/phone-backup 0750 phaedrus    users -"
+      "d /mnt/storage/tv         0775 sonarr      media -"
+      "d /mnt/storage/movies     0775 radarr      media -"
+      "d /mnt/storage/backups    0775 phaedrus    users -"
     ];
 
     # ──── SnapRAID ────
@@ -105,7 +108,7 @@
     systemd.timers.snapraid-sync = {
       wantedBy = [ "timers.target" ];
       timerConfig = {
-      OnCalendar = "00:00";   # after backup.timer (23:00) — order is load-bearing
+        OnCalendar = "00:00";   # after backup.timer (23:00) — order is load-bearing
         Persistent = true;
       };
     };

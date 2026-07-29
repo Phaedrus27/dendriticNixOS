@@ -23,9 +23,10 @@
             backup \
             /mnt/cache/paperless \
             /mnt/cache/syncthing/obsidian \
+            /mnt/cache/phone-backup \
             && ${pkgs.curl}/bin/curl -s -X POST "$(cat ${config.sops.secrets.discord_webhook.path})" \
               -H "Content-Type: application/json" \
-              -d '{"content": "✅ **Backup completed on squirtle**: paperless and obsidian backed up successfully."}' \
+              -d '{"content": "✅ **Backup completed on squirtle**: paperless, obsidian, and zubat backed up successfully."}' \
             || ${pkgs.curl}/bin/curl -s -X POST "$(cat ${config.sops.secrets.discord_webhook.path})" \
               -H "Content-Type: application/json" \
               -d '{"content": "🚨 **Backup FAILED on squirtle**: check restic logs immediately."}'
@@ -57,9 +58,10 @@
             backup \
             /mnt/cache/paperless \
             /mnt/cache/syncthing/obsidian \
+            /mnt/cache/phone-backup \
             && ${pkgs.curl}/bin/curl -s -X POST "$(cat ${config.sops.secrets.discord_webhook.path})" \
               -H "Content-Type: application/json" \
-              -d '{"content": "✅ **Charizard backup completed**: paperless and obsidian backed up to charizard."}' \
+              -d '{"content": "✅ **Charizard backup completed**: paperless, obsidian, and zubat backed up to charizard."}' \
             || ${pkgs.curl}/bin/curl -s -X POST "$(cat ${config.sops.secrets.discord_webhook.path})" \
               -H "Content-Type: application/json" \
               -d '{"content": "🚨 **Charizard backup FAILED**: check restic logs."}'
