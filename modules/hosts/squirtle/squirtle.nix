@@ -15,6 +15,7 @@
       self.nixosModules.backup
       self.nixosModules.base
       self.nixosModules.monitoring
+      self.nixosModules.scanServer
     ];
 
     boot.loader.systemd-boot.enable = true;

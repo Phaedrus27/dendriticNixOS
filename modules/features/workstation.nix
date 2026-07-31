@@ -77,17 +77,6 @@
       serviceConfig.SuccessExitStatus = [ 0 1 ];
     };
 
-    # ── Scanning ────────────────────────────────────────────────────────
-    hardware.sane = {
-      enable = true;
-      # Driverless eSCL backend. The DCP-L2530DW speaks eSCL but ONLY via
-      # sane-airscan — SANE's built-in `escl` backend fails on this model.
-      extraBackends = [ pkgs.sane-airscan ];
-      # Disable the built-in escl backend so it can't claim the device and
-      # shadow airscan. Required for this model, not just dedup hygiene.
-      disabledDefaultBackends = [ "escl" ];
-    };
-
     # ── Power ───────────────────────────────────────────────────────────
     services.upower.enable = true;
 
