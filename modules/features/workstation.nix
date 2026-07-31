@@ -65,6 +65,21 @@
         ensureDefaultPrinter = "Brother_DCP-L2530DW";
       };
 
+      hardware.sane = {
+        enable = true;
+        # Driverless eSCL/WSD backend — works for most modern network Brothers
+        # and avoids pulling brscan4/5 (proprietary, x86-only) into the closure.
+        extraBackends = [ pkgs.sane-airscan ];
+      };
+
+      # udev rules for airscan device discovery/access (needed for USB-attached
+      # units; harmless for pure-network eSCL).
+      services.udev.packages = [ pkgs.sane-airscan ];
+
+      # SANE gates scanner access behind the `scanner` group; without this,
+      # scanimage runs but sees nothing when the device is USB.
+      users.users.phaedrus.extraGroups = [ "scanner" "lp" ];
+
       # ensure-printers calls lpadmin on every activation, which makes CUPS fetch the
       # printer's IPP capabilities. A sleeping printer fails that fetch (exit 1) and
       # fails the whole switch (exit-4). Treat exit 1 as success: registration only

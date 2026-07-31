@@ -161,7 +161,7 @@
       "animationDisabled": false,
       "compactLockScreen": false,
       "lockScreenAnimations": false,
-      "lockOnSuspend": true,
+      "lockOnSuspend": false,
       "showSessionButtonsOnLockScreen": true,
       "showHibernateOnLockScreen": false,
       "enableLockScreenMediaControls": false,
@@ -661,7 +661,7 @@
       "notifyUpdates": true
     },
     "idle": {
-      "enabled": true,
+      "enabled": false,
       "screenOffTimeout": 600,
       "lockTimeout": 660,
       "suspendTimeout": 1800,
