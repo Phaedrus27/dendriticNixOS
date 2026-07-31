@@ -35,6 +35,8 @@
       KbdInteractiveAuthentication = false;
     };
 
+    nix.settings.trusted-users = ["root" "phaedrus" ];
+
     users.users.phaedrus.openssh.authorizedKeys.keys = [
       "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIJtarCyjvvCxzi1PwWavZXaPLcHRiDeIAZr2tyAFA+zXAAAADHNzaDp5dWJpa2V5QQ== yubikeyA"
       "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIOpNEHSKkHZCiCkuss0aNrLFKet3gEkQbWfysFzpgI+bAAAADHNzaDp5dWJpa2V5Qw== yubikeyC"
