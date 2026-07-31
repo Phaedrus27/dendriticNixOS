@@ -46,52 +46,49 @@
       pulse.enable = true;
     };
 
-      # ── Printing & power ────────────────────────────────────────────────
-      services.printing.enable = true;
+    # ── Printing ────────────────────────────────────────────────────────
+    services.printing.enable = true;
 
-      services.avahi = {
-        enable = true;          # resolves .local for discovery; deviceUri below is IP-based
-        nssmdns4 = true;
-        openFirewall = true;    # mDNS needs 5353/UDP both ways
-      };
+    services.avahi = {
+      enable = true;          # resolves .local for discovery; deviceUri below is IP-based
+      nssmdns4 = true;
+      openFirewall = true;    # mDNS needs 5353/UDP both ways
+    };
 
-      hardware.printers = {
-        ensurePrinters = [{
-          name = "Brother_DCP-L2530DW";
-          deviceUri = "ipp://192.168.1.140:631/ipp/print";   # UniFi-reserved IP — .local unreliable, printer sleeps
-          model = "everywhere";
-          ppdOptions.PageSize = "A4";
-        }];
-        ensureDefaultPrinter = "Brother_DCP-L2530DW";
-      };
+    hardware.printers = {
+      ensurePrinters = [{
+        name = "Brother_DCP-L2530DW";
+        deviceUri = "ipp://192.168.1.140:631/ipp/print";   # UniFi-reserved IP — .local unreliable, printer sleeps
+        model = "everywhere";
+        ppdOptions.PageSize = "A4";
+      }];
+      ensureDefaultPrinter = "Brother_DCP-L2530DW";
+    };
 
-      hardware.sane = {
-        enable = true;
-        # Driverless eSCL/WSD backend — works for most modern network Brothers
-        # and avoids pulling brscan4/5 (proprietary, x86-only) into the closure.
-        extraBackends = [ pkgs.sane-airscan ];
-      };
+    # ensure-printers calls lpadmin on every activation, which makes CUPS fetch the
+    # printer's IPP capabilities. A sleeping printer fails that fetch (exit 1) and
+    # fails the whole switch (exit-4). Treat exit 1 as success: registration only
+    # needs one successful fetch (persisted in /var/lib/cups), and the printer is
+    # usually asleep at rebuild time here.
+    # `after` (not `requires`) orders behind CUPS: ensure-printers cycles
+    # cups.service itself, and `requires` would send TERM when it stops.
+    systemd.services.ensure-printers = {
+      after = [ "cups.service" ];
+      serviceConfig.SuccessExitStatus = [ 0 1 ];
+    };
 
-      # udev rules for airscan device discovery/access (needed for USB-attached
-      # units; harmless for pure-network eSCL).
-      services.udev.packages = [ pkgs.sane-airscan ];
+    # ── Scanning ────────────────────────────────────────────────────────
+    hardware.sane = {
+      enable = true;
+      # Driverless eSCL backend. The DCP-L2530DW speaks eSCL but ONLY via
+      # sane-airscan — SANE's built-in `escl` backend fails on this model.
+      extraBackends = [ pkgs.sane-airscan ];
+      # Disable the built-in escl backend so it can't claim the device and
+      # shadow airscan. Required for this model, not just dedup hygiene.
+      disabledDefaultBackends = [ "escl" ];
+    };
 
-      # SANE gates scanner access behind the `scanner` group; without this,
-      # scanimage runs but sees nothing when the device is USB.
-      users.users.phaedrus.extraGroups = [ "scanner" "lp" ];
-
-      # ensure-printers calls lpadmin on every activation, which makes CUPS fetch the
-      # printer's IPP capabilities. A sleeping printer fails that fetch (exit 1) and
-      # fails the whole switch (exit-4). Treat exit 1 as success: registration only
-      # needs one successful fetch (persisted in /var/lib/cups), and the printer is
-      # usually asleep at rebuild time here.
-      # `after` (not `requires`) orders behind CUPS: ensure-printers cycles
-      # cups.service itself, and `requires` would send TERM when it stops.
-      systemd.services.ensure-printers = {
-        after = [ "cups.service" ];
-        serviceConfig.SuccessExitStatus = [ 0 1 ];
-      };
-    
+    # ── Power ───────────────────────────────────────────────────────────
     services.upower.enable = true;
 
     # ── Primary user ────────────────────────────────────────────────────
