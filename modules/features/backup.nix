@@ -44,6 +44,42 @@
       };
     };
 
+    # ──── Retention ────
+    # WHY: without forget/prune the repo grows forever — restic keeps every
+    # blob Seedvault ever rotated out, so the phone's ~5GB folder compounds
+    # nightly even though its live size is flat. Weekly is enough; prune
+    # rewrites pack files and is the heaviest thing that touches the array.
+    systemd.services.backup-prune = {
+      description = "Restic retention prune on local HDD array";
+      serviceConfig = {
+        Type = "oneshot";
+        CacheDirectory = "restic";
+        ExecStart = pkgs.writeShellScript "backup-prune" ''
+          export RESTIC_PASSWORD=$(cat ${config.sops.secrets.restic_password.path})
+          ${pkgs.restic}/bin/restic \
+            -r /mnt/storage/backups \
+            forget --prune \
+            --keep-daily 7 --keep-weekly 4 --keep-monthly 6 \
+            && ${pkgs.curl}/bin/curl -s -X POST "$(cat ${config.sops.secrets.discord_webhook.path})" \
+              -H "Content-Type: application/json" \
+              -d '{"content": "✅ **Restic prune completed on squirtle**"}' \
+            || ${pkgs.curl}/bin/curl -s -X POST "$(cat ${config.sops.secrets.discord_webhook.path})" \
+              -H "Content-Type: application/json" \
+              -d '{"content": "🚨 **Restic prune FAILED on squirtle**: check logs."}'
+        '';
+      };
+    };
+    systemd.timers.backup-prune = {
+      wantedBy = [ "timers.target" ];
+      timerConfig = {
+        # WHY: 22:00 Sunday, an hour ahead of backup.timer — prune rewrites
+        # pack files, so it must land inside the same night the 23:00 backup
+        # and 00:00 snapraid sync seal, not orphaned a day away from parity.
+        OnCalendar = "Sun 22:00";
+        Persistent = true;
+      };
+    };
+
     # Manual backup to charizard — trigger with: sudo systemctl start backup-charizard
     systemd.services.backup-charizard = {
       description = "Restic backup to charizard";
