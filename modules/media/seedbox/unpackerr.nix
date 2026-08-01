@@ -22,14 +22,19 @@
       unitConfig.RequiresMountsFor = [ "/mnt/storage/downloads"
       "/mnt/scratch"
        ];
-      environment = {
-        UN_SONARR_0_URL = "http://localhost:8989";
-        UN_SONARR_0_PATHS_0 = "/mnt/storage/downloads";
-        UN_SONARR_0_PROTOCOLS = "torrent,TorrentDownloadProtocol";
-        UN_RADARR_0_URL = "http://localhost:7878";
-        UN_RADARR_0_PATHS_0 = "/mnt/storage/downloads";
-        UN_RADARR_0_PROTOCOLS = "torrent,TorrentDownloadProtocol";
-      };
+    environment = {
+            UN_SONARR_0_URL = "http://localhost:8989";
+            # Two trees during the scratch transition: new arrivals land on
+            # /mnt/scratch, the legacy pool-side seed set drains by attrition.
+            # Drop the /mnt/storage entries once that tree is empty.
+            UN_SONARR_0_PATHS_0 = "/mnt/scratch/downloads";
+            UN_SONARR_0_PATHS_1 = "/mnt/storage/downloads";
+            UN_SONARR_0_PROTOCOLS = "torrent,TorrentDownloadProtocol";
+            UN_RADARR_0_URL = "http://localhost:7878";
+            UN_RADARR_0_PATHS_0 = "/mnt/scratch/downloads";
+            UN_RADARR_0_PATHS_1 = "/mnt/storage/downloads";
+            UN_RADARR_0_PROTOCOLS = "torrent,TorrentDownloadProtocol";
+          };
       serviceConfig = {
         Type = "simple";
         User = "unpackerr";

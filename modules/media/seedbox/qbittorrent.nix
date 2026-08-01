@@ -13,12 +13,12 @@
 
     systemd.services.qbittorrent = {
       description = "qBittorrent in VPN namespace";
-      after = [ "wg-vpn.service" "mnt-cache.mount" "mnt-storage.mount" ];
+      after = [ "wg-vpn.service" "mnt-scratch.mount" "mnt-storage.mount" ];
       # WHY: the sandbox bind-mounts these paths at spawn; without an
       # explicit ordering dependency the unit races the (nofail, fuse)
       # mergerfs mount at boot and fails NAMESPACE — observed 2026-07-16
       # when new PCI enumeration slowed mount assembly.
-      unitConfig.RequiresMountsFor = [ "/mnt/storage/downloads" "/mnt/cache/incomplete" ];
+      unitConfig.RequiresMountsFor = [ "/mnt/scratch" "/mnt/storage/downloads" ];
       requires = [ "wg-vpn.service" ];
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
@@ -47,9 +47,12 @@
         # controlled data (torrent metadata, peer wire protocol). Assume
         # eventual exploitation; scope what a compromise can touch.
 
-        # Filesystem: whole OS read-only except state dir and the two
-        # download trees (completed on storage, incomplete on cache —
-        # completion is a cross-fs copy+delete, so both must be writable).
+        # Filesystem: whole OS read-only except state dir and the download
+        # trees. incomplete and completed both live on scratch, so
+        # completion is a rename rather than the cross-filesystem copy that
+        # deadlocked the 200GB season pack against a full cache. The
+        # /mnt/storage entry covers the legacy pool-side seed set until it
+        # drains by attrition — drop it once that tree is empty.
         # A wrong/missing path here fails loudly: EROFS in the journal.
         ProtectSystem = "strict";
         ProtectHome = true;
