@@ -46,7 +46,7 @@
                 (lib.mkIf (config.networking.hostName == "mew") "/home/phaedrus/syncthing")
               ];
               devices = lib.mkMerge [
-                (lib.mkIf (config.networking.hostName == "squirtle") [ "charizard" "mew" ])
+                (lib.mkIf (config.networking.hostName == "squirtle") [ "charizard" "mew" "zubat" ])
                 (lib.mkIf (config.networking.hostName == "charizard") [ "squirtle" ])
                 (lib.mkIf (config.networking.hostName == "mew") [ "squirtle" ])
               ];
