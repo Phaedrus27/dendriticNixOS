@@ -4,6 +4,7 @@
     # │ squirtle storage layout                                     │
     # │  /mnt/disk2, /mnt/disk3  bulk data (btrfs, mergerfs union)  │
     # │  /mnt/parity             dedicated SnapRAID parity (CMR)    │
+    # │  /mnt/scratch            2TB SSD: torrent landing zone      │
     # │  /mnt/cache              NVMe partition: vital data interim │
     # │  /mnt/storage            mergerfs union of data disks       │
     # │  SnapRAID: daily sync+scrub timer, Discord on failure       │
@@ -29,6 +30,22 @@
       device = "/dev/disk/by-uuid/a499c65b-cac8-473b-804c-9a2c307fb71e";
       fsType = "btrfs";
       options = [ "defaults" "nofail" ];
+    };
+
+    # ──── Flash tiers ────
+    # Samsung 860 EVO 2TB, whole-disk btrfs (no partition table — one
+    # less thing to renumber). Torrent landing zone: incomplete and
+    # completed payload both live here, so qBittorrent's completion
+    # move is a rename rather than the cross-filesystem copy that
+    # deadlocked the 200GB season pack on the old cache path.
+    # Deliberately outside both the union and parity — transient,
+    # reacquirable, unbacked-up by design.
+    # noexec/nosuid/nodev: holding attacker-supplied bytes is this
+    # filesystem's entire purpose. noatime spares needless SSD writes.
+    fileSystems."/mnt/scratch" = {
+      device = "/dev/disk/by-uuid/eff70a8e-2af0-4907-8c87-155fe7390c12";
+      fsType = "btrfs";
+      options = [ "defaults" "nofail" "noexec" "nosuid" "nodev" "noatime" ];
     };
     fileSystems."/mnt/cache" = {
       device = "/dev/disk/by-uuid/f72e39fa-3225-4c84-987e-40f44fe7f8bf";
@@ -59,8 +76,8 @@
     # phone-backup is 0750 (private): it holds zubat's Seedvault dump, which
     # has no business being group/world-readable the way media dirs are.
     systemd.tmpfiles.rules = [
-      "d /mnt/cache/downloads    0775 qbittorrent media -"
-      "d /mnt/cache/incomplete   0775 qbittorrent media -"
+      "d /mnt/scratch/downloads  0775 qbittorrent media -"
+      "d /mnt/scratch/incomplete 0775 qbittorrent media -"
       "d /mnt/cache/phone-backup 0750 phaedrus    users -"
       "d /mnt/storage/tv         0775 sonarr      media -"
       "d /mnt/storage/movies     0775 radarr      media -"
@@ -70,7 +87,8 @@
     # ──── SnapRAID ────
     # Content files on root + both data disks; the parity drive
     # intentionally carries none. /downloads excluded: transient
-    # torrent payload, no parity value.
+    # torrent payload, no parity value. Still relevant while the
+    # legacy pool-side seed set drains by attrition.
     environment.etc."snapraid.conf".text = ''
       parity /mnt/parity/snapraid.parity
       content /var/snapraid.content
