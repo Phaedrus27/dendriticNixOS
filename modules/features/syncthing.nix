@@ -6,6 +6,15 @@
       dataDir = "/home/phaedrus";
       configDir = "/home/phaedrus/.config/syncthing";
 
+      # ──── GUI reachability ────
+      # squirtle is headless and its UI is the one that matters, so loopback-
+      # only means the UI dies with the SSH tunnel. Bind all interfaces and let
+      # the interface-scoped firewall rule below decide who reaches it: binding
+      # the Tailscale IP directly races tailscaled at boot and leaves syncthing
+      # dead if the interface isn't up yet. mew/charizard keep the loopback
+      # default — they're sat at locally, so remote UI is surface without use.
+      guiAddress = lib.mkIf (config.networking.hostName == "squirtle") "0.0.0.0:8384";
+
       settings = {
         devices = {
           squirtle = {
@@ -60,7 +69,15 @@
       };
     };
 
+    # ──── Firewall ────
+    # 22000/tcp+udp = sync protocol, 21027/udp = local discovery broadcasts.
     networking.firewall.allowedTCPPorts = [ 22000 ];
     networking.firewall.allowedUDPPorts = [ 22000 21027 ];
+
+    # WHY: 8384 stays out of the global lists above — scoping it to tailscale0
+    # keeps the unauthenticated GUI off the LAN and VLANs while leaving it
+    # reachable from any tailnet device without a tunnel.
+    networking.firewall.interfaces."tailscale0".allowedTCPPorts =
+      lib.mkIf (config.networking.hostName == "squirtle") [ 8384 ];
   };
 }
