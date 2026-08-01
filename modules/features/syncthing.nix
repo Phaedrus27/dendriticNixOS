@@ -29,7 +29,9 @@
             id = "BA6TEFV-CZCEQYZ-HIPS6W3-BFB53FN-B2MBT2K-LAVPEW4-4CISR2V-IXLCUQA";
             addresses = [ "tcp://100.122.227.20:22000" ];
           };
-          phone = {
+          # One entry only: both GrapheneOS profiles are backed up from the
+          # personal profile, so a single Syncthing instance carries both.
+          zubat = {
             id = "ND3MRVS-YYZLSRP-CDNPNQU-YGE2UN4-HGQQEVR-SQY35VL-LL445N3-A6KJ6QQ";
             addresses = [ "tcp://100.91.247.8:22000" ];
           };
@@ -52,17 +54,20 @@
           }
 
           # ──── zubat backup sink (squirtle only) ────
-          # Seedvault app-data arrives here from the phone, then restic (23:00)
-          # + snapraid (00:00) give it durability — Syncthing is replication,
-          # not backup. receiveonly: squirtle is an archive sink and must never
-          # push state back to zubat.
+          # Holds BOTH profiles: Seedvault namespaces each profile into its own
+          # subfolder, so one synced dir covers personal + private. restic
+          # (23:00) + snapraid (00:00) then give it durability — Syncthing is
+          # replication, not backup. The id MUST equal the phone's folder ID
+          # verbatim: a mismatch pairs nothing yet still reports "Up to Date"
+          # on an empty folder. receiveonly: squirtle is an archive sink and
+          # must never push state back to zubat.
           (lib.mkIf (config.networking.hostName == "squirtle") {
-            "zubat-seedvault" = {
+            zubat-seedvault = {
               id = "zubat-seedvault";
               label = "zubat Seedvault";
               path = "/mnt/cache/phone-backup/seedvault";
               type = "receiveonly";
-              devices = [ "phone" ];
+              devices = [ "zubat" ];
             };
           })
         ];
@@ -75,8 +80,8 @@
     networking.firewall.allowedUDPPorts = [ 22000 21027 ];
 
     # WHY: 8384 stays out of the global lists above — scoping it to tailscale0
-    # keeps the unauthenticated GUI off the LAN and VLANs while leaving it
-    # reachable from any tailnet device without a tunnel.
+    # keeps the GUI off the LAN and VLANs while leaving it reachable from any
+    # tailnet device without a tunnel.
     networking.firewall.interfaces."tailscale0".allowedTCPPorts =
       lib.mkIf (config.networking.hostName == "squirtle") [ 8384 ];
   };
