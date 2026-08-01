@@ -19,7 +19,9 @@
       # exactly this race 2026-07-16; unpackerr only won it by luck of
       # its later start. Keep in lockstep with ReadWritePaths (both move
       # to /mnt/scratch when the churn drive lands).
-      unitConfig.RequiresMountsFor = [ "/mnt/storage/downloads" ];
+      unitConfig.RequiresMountsFor = [ "/mnt/storage/downloads"
+      "/mnt/scratch"
+       ];
       environment = {
         UN_SONARR_0_URL = "http://localhost:8989";
         UN_SONARR_0_PATHS_0 = "/mnt/storage/downloads";
@@ -45,7 +47,10 @@
         # must never touch partial downloads.
         ProtectSystem = "strict";
         ProtectHome = true;
-        ReadWritePaths = [ "/mnt/storage/downloads" ];
+        ReadWritePaths = [ 
+          "/mnt/storage/downloads"
+          "/mnt/scratch/downloads"
+           ];
         PrivateTmp = true;
 
         # No privilege-escalation path.

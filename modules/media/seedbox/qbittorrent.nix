@@ -55,8 +55,9 @@
         ProtectHome = true;
         ReadWritePaths = [
           "/var/lib/qbittorrent"
+          "/mnt/scratch/downloads"
+          "/mnt/scratch/incomplete"
           "/mnt/storage/downloads"
-          "/mnt/cache/incomplete"
         ];
         PrivateTmp = true;
 
