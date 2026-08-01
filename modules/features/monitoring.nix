@@ -395,4 +395,323 @@ $FAILED"
 
                   if [ -z "$LAST" ]; then
                     transition "$SF" "never" \
-                      "🚨 **Never ran on $HOST**: $UNIT has no recorded run —
+                      "🚨 **Never ran on $HOST**: $UNIT has no recorded run — check that its timer is enabled."
+                    return
+                  fi
+
+                  THEN=$(${pkgs.coreutils}/bin/date -d "$LAST" +%s 2>/dev/null)
+                  is_num "$THEN" || { notify "⚠️ **Freshness check failed on $HOST**: unparsable timestamp for $UNIT."; return; }
+                  AGE=$(( ( NOW - THEN ) / 3600 ))
+
+                  if [ "$AGE" -gt "$MAX" ]; then
+                    transition "$SF" "stale" \
+                      "🚨 **Stale job on $HOST**: $UNIT last ran ''${AGE}h ago (limit ''${MAX}h)."
+                  else
+                    transition "$SF" "ok" \
+                      "✅ **Job running again on $HOST**: $UNIT ran ''${AGE}h ago."
+                  fi
+                }
+
+                check_path() {
+                  P=$1; MAX=$2
+                  SAFE=$(echo "$P" | tr '/' '_')
+                  SF="$STATE_DIR/path$SAFE"
+
+                  if [ ! -d "$P" ]; then
+                    transition "$SF" "missing" \
+                      "🚨 **Path missing on $HOST**: $P does not exist."
+                    return
+                  fi
+
+                  NEWEST=$(${pkgs.findutils}/bin/find "$P" -type f -printf '%T@\n' 2>/dev/null \
+                    | ${pkgs.coreutils}/bin/sort -n | ${pkgs.coreutils}/bin/tail -1 | cut -d. -f1)
+
+                  if [ -z "$NEWEST" ]; then
+                    transition "$SF" "empty" \
+                      "🚨 **No data on $HOST**: $P is empty — the producer is connected to nothing."
+                    return
+                  fi
+                  is_num "$NEWEST" || return
+                  AGE=$(( ( NOW - NEWEST ) / 3600 ))
+
+                  if [ "$AGE" -gt "$MAX" ]; then
+                    transition "$SF" "stale" \
+                      "🚨 **Stale data on $HOST**: newest file in $P is ''${AGE}h old (limit ''${MAX}h)."
+                  else
+                    transition "$SF" "ok" \
+                      "✅ **Data flowing again on $HOST**: $P updated ''${AGE}h ago."
+                  fi
+                }
+
+                ${jobCalls}${pathCalls}
+              '';
+            };
+          };
+          systemd.timers.freshness-monitor = {
+            wantedBy = [ "timers.target" ];
+            timerConfig = { OnCalendar = "hourly"; Persistent = true; RandomizedDelaySec = "5m"; };
+          };
+        })
+
+        # ──── Disk SMART health: only on hosts that registered disks/NVMe ────
+        (lib.mkIf (disks != [ ] || nvmes != [ ]) {
+          environment.systemPackages = [ pkgs.smartmontools ];
+
+          systemd.services.disk-monitor = {
+            description = "Disk health monitor with Discord alerts";
+            serviceConfig = {
+              Type = "oneshot";
+              StateDirectory = "disk-monitor";
+              ExecStart = pkgs.writeShellScript "disk-monitor" ''
+                ${shellLib}
+                STATE_DIR=/var/lib/disk-monitor
+                TEMP_HIGH=${toString cfg.tempHigh}
+                TEMP_LOW=${toString cfg.tempLow}
+
+                # Exit-bit parsing, not grep: a device that has vanished from
+                # the bus prints "failed:" in its error message, which a grep
+                # for FAILED would report as a dying disk rather than a gone one.
+                smart_state() {
+                  ${pkgs.smartmontools}/bin/smartctl -H "$1" >/dev/null 2>&1
+                  RC=$?
+                  if   [ $(( RC & 3 )) -ne 0 ]; then echo "UNREADABLE"
+                  elif [ $(( RC & 8 )) -ne 0 ]; then echo "FAILED"
+                  else echo "PASSED"; fi
+                }
+
+                check_health() {
+                  DISK=$1; SAFE=$2; KIND=$3
+                  CURR=$(smart_state "$DISK")
+                  HF="$STATE_DIR/health$SAFE"
+                  PREV=$(cat "$HF" 2>/dev/null || echo "PASSED")
+                  [ "$CURR" = "$PREV" ] && { echo "$CURR" > "$HF"; [ "$CURR" = "PASSED" ]; return; }
+
+                  case "$CURR" in
+                    FAILED)
+                      notify "🚨 **$KIND FAILURE on $HOST**: $DISK has FAILED its SMART health check! Immediate action required." ;;
+                    UNREADABLE)
+                      notify "🚨 **$KIND UNREADABLE on $HOST**: $DISK cannot be queried — the device may have dropped off the bus." ;;
+                    PASSED)
+                      notify "✅ **$KIND readable and passing on $HOST**: $DISK. (Stay suspicious — investigate the earlier state: $PREV.)" ;;
+                  esac
+                  echo "$CURR" > "$HF"
+                  [ "$CURR" = "PASSED" ]
+                }
+
+                # Raw-value attributes that only ever matter when they grow.
+                check_attr_increase() {
+                  SAFE=$1; ATTR=$2; LABEL=$3; DISK=$4; ATTRS=$5
+                  AF="$STATE_DIR/$ATTR$SAFE"
+                  PREV=$(cat "$AF" 2>/dev/null || echo "0")
+                  is_num "$PREV" || PREV=0
+                  V=$(echo "$ATTRS" | grep "$ATTR" | head -1 | ${pkgs.gawk}/bin/awk '{print $10}')
+                  is_num "$V" || return
+                  if [ "$V" -gt "$PREV" ]; then
+                    notify "⚠️ **Disk Warning on $HOST**: $DISK $LABEL increased: $PREV → $V."
+                  fi
+                  echo "$V" > "$AF"
+                }
+
+                check_temp() {
+                  DISK=$1; SAFE=$2; T=$3
+                  is_num "$T" || return
+                  TF="$STATE_DIR/temp$SAFE"
+                  if [ "$T" -ge "$TEMP_HIGH" ]; then
+                    transition "$TF" "hot" \
+                      "🔥 **Drive temperature on $HOST**: $DISK is at ''${T}°C (limit ''${TEMP_HIGH}°C) — check airflow."
+                  elif [ "$T" -lt "$TEMP_LOW" ]; then
+                    transition "$TF" "ok" \
+                      "✅ **Drive temperature OK on $HOST**: $DISK back down to ''${T}°C."
+                  fi
+                }
+
+                check_disk() {
+                  DISK=$1
+                  SAFE=$(echo "$DISK" | tr '/' '_')
+                  check_health "$DISK" "$SAFE" "DISK" || return
+                  A=$(${pkgs.smartmontools}/bin/smartctl -A "$DISK" 2>&1)
+
+                  check_attr_increase "$SAFE" "Reallocated_Sector"  "reallocated sectors" "$DISK" "$A"
+                  check_attr_increase "$SAFE" "Current_Pending_Sector" "pending sectors"   "$DISK" "$A"
+
+                  # SSD endurance: normalized VALUE (field 4) counts DOWN from
+                  # 100, the inverse of the NVMe percentage — this is the only
+                  # wear signal on the scratch SSD, which absorbs every write.
+                  WF="$STATE_DIR/wear$SAFE"
+                  W=$(echo "$A" | grep -E "Wear_Leveling_Count|Media_Wearout_Indicator" \
+                    | head -1 | ${pkgs.gawk}/bin/awk '{print $4}')
+                  if is_num "$W" && [ "$W" -le 10 ]; then
+                    transition "$WF" "worn" \
+                      "⚠️ **SSD Wear on $HOST**: $DISK endurance indicator down to $W/100. Plan a replacement."
+                  fi
+
+                  T=$(echo "$A" | grep -E "Temperature_Celsius|Airflow_Temperature" \
+                    | head -1 | ${pkgs.gawk}/bin/awk '{print $10}')
+                  check_temp "$DISK" "$SAFE" "$T"
+                }
+
+                check_nvme() {
+                  DISK=$1
+                  SAFE=$(echo "$DISK" | tr '/' '_')
+                  check_health "$DISK" "$SAFE" "NVMe" || return
+                  A=$(${pkgs.smartmontools}/bin/smartctl -A "$DISK" 2>&1)
+
+                  MF="$STATE_DIR/mediaerr$SAFE"
+                  PREV_M=$(cat "$MF" 2>/dev/null || echo "0")
+                  is_num "$PREV_M" || PREV_M=0
+                  M=$(echo "$A" | grep -i "Media and Data Integrity Errors" \
+                    | ${pkgs.gawk}/bin/awk '{print $NF}' | tr -d ',')
+                  if is_num "$M"; then
+                    if [ "$M" -gt "$PREV_M" ]; then
+                      notify "⚠️ **NVMe Warning on $HOST**: $DISK media errors increased: $PREV_M → $M."
+                    fi
+                    echo "$M" > "$MF"
+                  fi
+
+                  WF="$STATE_DIR/wear$SAFE"
+                  PCT=$(echo "$A" | grep -i "Percentage Used" \
+                    | ${pkgs.gawk}/bin/awk '{print $NF}' | tr -d '%')
+                  if is_num "$PCT" && [ "$PCT" -gt 90 ]; then
+                    transition "$WF" "worn" \
+                      "⚠️ **NVMe Wear on $HOST**: $DISK is at $PCT% of rated write endurance. Plan a replacement."
+                  fi
+
+                  T=$(echo "$A" | grep -i "^Temperature:" | ${pkgs.gawk}/bin/awk '{print $2}')
+                  check_temp "$DISK" "$SAFE" "$T"
+                }
+
+                ${diskCalls}${nvmeCalls}
+              '';
+            };
+          };
+          systemd.timers.disk-monitor = {
+            wantedBy = [ "timers.target" ];
+            # Off midnight so the SMART sweep neither collides with snapraid-sync
+            # nor lands its report while nobody is awake to read it.
+            timerConfig = { OnCalendar = "09:00"; Persistent = true; RandomizedDelaySec = "15m"; };
+          };
+        })
+
+        # ──── Filesystem space: only on hosts that registered filesystems ────
+        (lib.mkIf (fses != [ ]) {
+          systemd.services.disk-space-monitor = {
+            description = "Filesystem presence and space monitor with Discord alerts";
+            serviceConfig = {
+              Type = "oneshot";
+              StateDirectory = "disk-space-monitor";
+              ExecStart = pkgs.writeShellScript "disk-space-monitor" ''
+                ${shellLib}
+                STATE_DIR=/var/lib/disk-space-monitor
+
+                check_fs() {
+                  MOUNT=$1; HIGH=$2; LOW=$3
+                  SAFE=$(echo "$MOUNT" | tr '/' '_')
+                  SF="$STATE_DIR/space$SAFE"
+
+                  # df falls back to the parent filesystem for an unmounted
+                  # path, so a missing disk would report as healthy free space.
+                  if ! ${pkgs.util-linux}/bin/findmnt -M "$MOUNT" >/dev/null 2>&1; then
+                    transition "$SF" "unmounted" \
+                      "🚨 **Mount missing on $HOST**: $MOUNT is not mounted."
+                    return
+                  fi
+
+                  # --output=pcent avoids the field shift awk '$5' suffers when
+                  # df wraps a long source name, as mergerfs branch strings do.
+                  USAGE=$(${pkgs.coreutils}/bin/df --output=pcent "$MOUNT" 2>/dev/null \
+                    | ${pkgs.gawk}/bin/awk 'NR==2' | tr -dc '0-9')
+                  if ! is_num "$USAGE"; then
+                    notify "⚠️ **Space check failed on $HOST**: could not read usage for $MOUNT."
+                    return
+                  fi
+
+                  if [ "$USAGE" -gt "$HIGH" ]; then
+                    transition "$SF" "alerted" \
+                      "⚠️ **Disk space on $HOST**: $MOUNT is at $USAGE% capacity."
+                  elif [ "$USAGE" -lt "$LOW" ]; then
+                    transition "$SF" "ok" \
+                      "✅ **Disk space OK on $HOST**: $MOUNT is back down to $USAGE%."
+                  fi
+                }
+
+                ${fsCalls}
+              '';
+            };
+          };
+          systemd.timers.disk-space-monitor = {
+            wantedBy = [ "timers.target" ];
+            timerConfig = { OnCalendar = "hourly"; Persistent = true; };
+          };
+        })
+
+        # ──── Heartbeat: distinguishes a quiet week from a dead alert path ────
+        (lib.mkIf cfg.heartbeat {
+          systemd.services.heartbeat = {
+            description = "Weekly monitoring all-clear with Discord summary";
+            serviceConfig = {
+              Type = "oneshot";
+              ExecStart = pkgs.writeShellScript "heartbeat" ''
+                ${shellLib}
+                NOW=$(${pkgs.coreutils}/bin/date +%s)
+                REPORT="💚 **Weekly monitor report on $HOST** (up since $(${pkgs.procps}/bin/uptime -s))"
+
+                FAILED=$(${pkgs.systemd}/bin/systemctl --failed --no-legend --plain \
+                  | ${pkgs.gawk}/bin/awk '{print $1}' | tr '\n' ' ')
+                if [ -n "$FAILED" ]; then
+                  REPORT="$REPORT
+⚠️ Failed units: $FAILED"
+                else
+                  REPORT="$REPORT
+✅ No failed units"
+                fi
+
+                report_fs() {
+                  MOUNT=$1
+                  if ! ${pkgs.util-linux}/bin/findmnt -M "$MOUNT" >/dev/null 2>&1; then
+                    REPORT="$REPORT
+🚨 $MOUNT NOT MOUNTED"
+                    return
+                  fi
+                  U=$(${pkgs.coreutils}/bin/df --output=pcent "$MOUNT" 2>/dev/null \
+                    | ${pkgs.gawk}/bin/awk 'NR==2' | tr -dc '0-9')
+                  REPORT="$REPORT
+- $MOUNT $U%"
+                }
+
+                report_job() {
+                  UNIT=$1
+                  LAST=$(${pkgs.systemd}/bin/systemctl show -p InactiveExitTimestamp \
+                    --value "$UNIT.service" 2>/dev/null)
+                  THEN=$(${pkgs.coreutils}/bin/date -d "$LAST" +%s 2>/dev/null)
+                  if is_num "$THEN"; then
+                    REPORT="$REPORT
+- $UNIT ran $(( ( NOW - THEN ) / 3600 ))h ago"
+                  else
+                    REPORT="$REPORT
+🚨 $UNIT NEVER RAN"
+                  fi
+                }
+
+                ${lib.concatMapStrings (f: "report_fs ${f.mount}\n") fses}
+                ${lib.concatMapStrings (j: "report_job ${j.unit}\n") jobs}
+
+                notify "$REPORT"
+              '';
+            };
+          };
+          systemd.timers.heartbeat = {
+            wantedBy = [ "timers.target" ];
+            timerConfig = { OnCalendar = "Sun 10:00"; Persistent = true; };
+          };
+        })
+
+        # OnFailure attachments for instant crash alerts, merged as a
+        # separate fragment so the wholesale `systemd.services` assignment
+        # doesn't collide with the named definitions above.
+        {
+          systemd.services = lib.genAttrs hookedUnits
+            (name: { unitConfig.OnFailure = [ "notify-failure@%n.service" ]; });
+        }
+      ];
+    };
+}
