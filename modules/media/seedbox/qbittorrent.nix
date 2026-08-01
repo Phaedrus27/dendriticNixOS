@@ -13,7 +13,16 @@
 
     systemd.services.qbittorrent = {
       description = "qBittorrent in VPN namespace";
-      after = [ "wg-vpn.service" "mnt-scratch.mount" "mnt-storage.mount" ];
+      # RequiresMountsFor guarantees the filesystem; it does not guarantee
+      # the directories on it. The ReadWritePaths bind-mount happens at
+      # spawn, so the tmpfiles rules that create downloads/ and incomplete/
+      # must have run first or the unit dies at step NAMESPACE.
+      after = [
+        "wg-vpn.service"
+        "mnt-scratch.mount"
+        "mnt-storage.mount"
+        "systemd-tmpfiles-setup.service"
+      ];
       # WHY: the sandbox bind-mounts these paths at spawn; without an
       # explicit ordering dependency the unit races the (nofail, fuse)
       # mergerfs mount at boot and fails NAMESPACE — observed 2026-07-16
