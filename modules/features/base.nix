@@ -21,6 +21,13 @@
     };
     nix.optimise.automatic = true;
 
+    # Scheduled GC can't help during a heavy rebuild week: every generation
+    # is inside the retention window, so the weekly run finds nothing
+    # eligible. This reclaims mid-build instead — a rebuild that would
+    # otherwise hit ENOSPC degrades into a GC pause.
+    nix.settings.min-free = 5368709120;    # 5 GiB
+    nix.settings.max-free = 10737418240;   # 10 GiB
+
     nixpkgs.config.allowUnfree = true;
 
     # ── Logging ───────────────────────────────────────────────────────
