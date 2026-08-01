@@ -82,6 +82,7 @@
         { mount = "/mnt/disk3";   high = 90; low = 85; }
         { mount = "/mnt/parity";  high = 95; low = 90; }
         { mount = "/mnt/storage"; high = 90; low = 85; }
+        { mount = "/mnt/sratch";  high = 90; low = 85; }
       ];
     };
 
