@@ -68,23 +68,27 @@
     # Drives are watched by-id (serial-derived): immune to the sdX
     # enumeration shuffle that five drives on two controllers guarantee.
     dendriticNixOS.monitoring = {
-      discordUsername = "Squirtle";
-      watchedDisks = [
-        "/dev/disk/by-id/ata-ST4000VN006-3CW104_ZW63HHNT"   # disk2 (IronWolf, data)
-        "/dev/disk/by-id/ata-ST4000DM004-2CV104_WFN41F62"   # disk3 (Barracuda, data)
-        "/dev/disk/by-id/ata-ST4000VN006-3CW104_ZW63JHDE"   # parity (IronWolf)
-      ];
-      watchedNvme = [ "/dev/nvme0n1" ];
-      watchedFilesystems = [
-        { mount = "/";            high = 85; low = 75; }
-        { mount = "/mnt/cache";   high = 90; low = 85; }
-        { mount = "/mnt/disk2";   high = 90; low = 85; }
-        { mount = "/mnt/disk3";   high = 90; low = 85; }
-        { mount = "/mnt/parity";  high = 95; low = 90; }
-        { mount = "/mnt/storage"; high = 90; low = 85; }
-        { mount = "/mnt/sratch";  high = 90; low = 85; }
-      ];
-    };
+          discordUsername = "Squirtle";
+          watchedDisks = [
+            "/dev/disk/by-id/ata-ST4000VN006-3CW104_ZW63HHNT"        # disk2 (IronWolf, data)
+            "/dev/disk/by-id/ata-ST4000DM004-2CV104_WFN41F62"        # disk3 (Barracuda, data)
+            "/dev/disk/by-id/ata-ST4000VN006-3CW104_ZW63JHDE"        # parity (IronWolf)
+            "/dev/disk/by-id/ata-Samsung_SSD_860_EVO_2TB_S3YVNX0N700137K"  # scratch
+          ];
+          watchedNvme = [ "/dev/nvme0n1" ];
+          # Scratch alerts earlier than the rest: it fills by design and pruning
+          # is manual, so the warning has to arrive with a UHD pack's worth of
+          # room still left rather than at the usual 10%.
+          watchedFilesystems = [
+            { mount = "/";            high = 85; low = 75; }
+            { mount = "/mnt/cache";   high = 90; low = 85; }
+            { mount = "/mnt/disk2";   high = 90; low = 85; }
+            { mount = "/mnt/disk3";   high = 90; low = 85; }
+            { mount = "/mnt/parity";  high = 95; low = 90; }
+            { mount = "/mnt/scratch"; high = 80; low = 70; }
+            { mount = "/mnt/storage"; high = 90; low = 85; }
+          ];
+        };
 
     sops.secrets.tailscale_authkey = { };
     dendriticNixOS.tailscale.authKeyFile = config.sops.secrets.tailscale_authkey.path;
