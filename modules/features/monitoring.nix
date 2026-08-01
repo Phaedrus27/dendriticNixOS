@@ -1,25 +1,77 @@
 { self, inputs, ... }: {
   flake.nixosModules.monitoring = { config, pkgs, lib, ... }:
+    # ──────────────────────────────────────────────────────────────
+    #  Fleet monitoring — Discord alerting over a shared webhook.
+    #
+    #  Rosters (hosts register their own):
+    #    watchedServices  long-running units — OnFailure + up/down poll
+    #    watchedJobs      oneshot units      — OnFailure + staleness deadman
+    #    watchedPaths     data trees         — mtime freshness deadman
+    #    watchedDisks     SATA/SAS by-id     — health, attrs, wear, temp
+    #    watchedNvme      NVMe by-id         — health, media errors, wear, temp
+    #    watchedFilesystems  mountpoints     — mount presence + capacity
+    #
+    #  Monitors, in file order:
+    #    failed-units-monitor   */5      newly failed units the rosters miss
+    #    boot-notify            at boot  real boots only, clears stale state
+    #    notify-failure@        event    instant crash alert, rate limited
+    #    service-monitor        */15     up/down transitions + recovery
+    #    freshness-monitor      hourly   jobs and paths that stopped happening
+    #    disk-monitor           daily    SMART health, attrs, wear, temperature
+    #    disk-space-monitor     hourly   mount presence + capacity
+    #    heartbeat              weekly   proves the alert path itself is alive
+    # ──────────────────────────────────────────────────────────────
     let
       cfg = config.dendriticNixOS.monitoring;
 
       watched = cfg.watchedServices;
+      jobs    = cfg.watchedJobs;
+      paths   = cfg.watchedPaths;
       disks   = cfg.watchedDisks;
       nvmes   = cfg.watchedNvme;
       fses    = cfg.watchedFilesystems;
 
+      # Oneshots need the OnFailure hook but must never reach the poller:
+      # a successfully completed oneshot reads as inactive, so polling it
+      # would alert DOWN every 15 minutes forever.
+      jobUnits    = map (j: j.unit) jobs;
+      hookedUnits = watched ++ jobUnits;
+
+      # The generic watcher exists to catch what the rosters miss, so
+      # anything already carrying an OnFailure hook is filtered out of it.
+      excludedUnits = map (u: "${u}.service") hookedUnits;
+
       # JSON-safe Discord notify, shared by all scripts via sourcing.
       # USERNAME stamps a per-host sender name into every message, so one
       # shared webhook still surfaces each host under its own identity.
-      notifyLib = ''
+      shellLib = ''
         HOST="${config.networking.hostName}"
         USERNAME="${cfg.discordUsername}"
         WEBHOOK=$(cat ${config.sops.secrets.discord_webhook.path})
+
+        # --fail is load-bearing: without it curl exits 0 on 4xx/5xx, so a
+        # revoked webhook or a 429 would be indistinguishable from delivery.
         notify() {
           ${pkgs.jq}/bin/jq -n --arg c "$1" --arg u "$USERNAME" \
               '{content: $c, username: $u}' \
-            | ${pkgs.curl}/bin/curl -s -X POST "$WEBHOOK" \
-                -H "Content-Type: application/json" -d @-
+            | ${pkgs.curl}/bin/curl -sS --fail --max-time 15 \
+                --retry 3 --retry-delay 5 --retry-connrefused \
+                -X POST "$WEBHOOK" -H "Content-Type: application/json" -d @-
+        }
+
+        # Every parsed metric passes through here — an unreadable value must
+        # not fall back to 0 and get reported as healthy.
+        is_num() { [ -n "$1" ] && [ -z "$(echo "$1" | tr -d '0-9')" ]; }
+
+        # Hysteresis helper: fire once per state change, not once per run.
+        # $1 state file, $2 new state, $3 message (empty = stay silent)
+        transition() {
+          SF="$1"; NEW="$2"; MSG="$3"
+          OLD=$(cat "$SF" 2>/dev/null || echo "ok")
+          if [ "$NEW" != "$OLD" ]; then
+            [ -n "$MSG" ] && notify "$MSG"
+            echo "$NEW" > "$SF"
+          fi
         }
       '';
 
@@ -28,6 +80,10 @@
       nvmeCalls = lib.concatMapStrings (n: "check_nvme ${n}\n") nvmes;
       fsCalls   = lib.concatMapStrings
         (f: "check_fs ${f.mount} ${toString f.high} ${toString f.low}\n") fses;
+      jobCalls  = lib.concatMapStrings
+        (j: "check_job ${j.unit} ${toString j.maxHours}\n") jobs;
+      pathCalls = lib.concatMapStrings
+        (p: "check_path ${lib.escapeShellArg p.path} ${toString p.maxHours}\n") paths;
     in {
       # Stable identity in case a host and one of its role modules both pull
       # monitoring into the same evaluation — the module system dedupes on key.
@@ -38,7 +94,54 @@
         watchedServices = lib.mkOption {
           type = lib.types.listOf lib.types.str;
           default = [ ];
-          description = "Services that get instant OnFailure alerts and 15-min up/down polling.";
+          description = ''
+            Long-running services: instant OnFailure alerts plus 15-min
+            up/down polling. Bare unit names, no .service suffix. Oneshot
+            units belong in watchedJobs instead.
+          '';
+        };
+
+        watchedJobs = lib.mkOption {
+          default = [ ];
+          description = ''
+            Oneshot/timer-driven units: OnFailure alerts plus a staleness
+            deadman. A unit that silently stops being scheduled is not a
+            failed unit, so nothing else in this module can see it.
+          '';
+          type = lib.types.listOf (lib.types.submodule {
+            options = {
+              unit = lib.mkOption {
+                type = lib.types.str;
+                description = "Bare unit name, no .service suffix.";
+              };
+              maxHours = lib.mkOption {
+                type = lib.types.ints.positive;
+                description = "Alert if the last run is older than this.";
+              };
+            };
+          });
+        };
+
+        watchedPaths = lib.mkOption {
+          default = [ ];
+          description = ''
+            Data trees that must keep receiving writes. Liveness of the
+            producing service is not evidence that data is arriving — a
+            Syncthing folder-ID mismatch keeps the unit active and the
+            folder empty.
+          '';
+          type = lib.types.listOf (lib.types.submodule {
+            options = {
+              path = lib.mkOption {
+                type = lib.types.str;
+                description = "Directory whose newest file mtime is checked.";
+              };
+              maxHours = lib.mkOption {
+                type = lib.types.ints.positive;
+                description = "Alert if nothing under path is newer than this.";
+              };
+            };
+          });
         };
 
         # Per-host Discord sender name. Defaults to the hostname so a shared
@@ -52,25 +155,25 @@
         watchedDisks = lib.mkOption {
           type = lib.types.listOf lib.types.str;
           default = [ ];
-          example = [ "/dev/sda" "/dev/sdb" ];
-          description = "SATA/SAS device paths to SMART-check (health + reallocated sectors).";
+          example = [ "/dev/disk/by-id/ata-ST4000VN008_ZW63HHNT" ];
+          description = "SATA/SAS by-id paths to SMART-check (health, attrs, wear, temperature).";
         };
 
         watchedNvme = lib.mkOption {
           type = lib.types.listOf lib.types.str;
           default = [ ];
           example = [ "/dev/nvme0n1" ];
-          description = "NVMe device paths to SMART-check (health + media errors + wear).";
+          description = "NVMe device paths to SMART-check (health, media errors, wear, temperature).";
         };
 
         watchedFilesystems = lib.mkOption {
           default = [ ];
-          description = "Mountpoints to watch for capacity, with hysteresis thresholds.";
+          description = "Mountpoints to watch for presence and capacity, with hysteresis thresholds.";
           type = lib.types.listOf (lib.types.submodule {
             options = {
               mount = lib.mkOption {
                 type = lib.types.str;
-                description = "Mountpoint to check with df.";
+                description = "Mountpoint to check.";
               };
               high = lib.mkOption {
                 type = lib.types.ints.between 1 100;
@@ -83,6 +186,27 @@
             };
           });
         };
+
+        tempHigh = lib.mkOption {
+          type = lib.types.ints.positive;
+          default = 50;
+          description = "Drive temperature in °C that triggers an alert.";
+        };
+
+        tempLow = lib.mkOption {
+          type = lib.types.ints.positive;
+          default = 45;
+          description = "Temperature the drive must fall back below to clear the alert.";
+        };
+
+        heartbeat = lib.mkOption {
+          type = lib.types.bool;
+          default = true;
+          description = ''
+            Weekly all-clear summary. The only thing that distinguishes a
+            quiet week from a dead alert path.
+          '';
+        };
       };
 
       config = lib.mkMerge [
@@ -90,20 +214,31 @@
           # Monitoring consumes the webhook, so monitoring declares it.
           sops.secrets.discord_webhook = { };
 
-          environment.systemPackages = [ pkgs.smartmontools ];
+          # A ".service" suffix in a roster would make the OnFailure
+          # attachment below generate `foo.service.service`.
+          assertions = map (u: {
+            assertion = !(lib.hasSuffix ".service" u);
+            message = "dendriticNixOS.monitoring: '${u}' must be a bare unit name.";
+          }) hookedUnits;
 
-          # ──── Generic failed-units watcher: catches what the service list misses ────
+          # ──── Generic failed-units watcher: catches what the rosters miss ────
           systemd.services.failed-units-monitor = {
             description = "Alert on any newly failed systemd units";
+            after = [ "boot-notify.service" ];
             serviceConfig = {
               Type = "oneshot";
               StateDirectory = "failed-units-monitor";
               ExecStart = pkgs.writeShellScript "failed-units-monitor" ''
-                ${notifyLib}
+                ${shellLib}
                 STATE_FILE=/var/lib/failed-units-monitor/failed
+                ALL_FILE=$(mktemp)
+                EXCL_FILE=$(mktemp)
                 CURR_FILE=$(mktemp)
+
                 ${pkgs.systemd}/bin/systemctl --failed --no-legend --plain \
-                  | ${pkgs.gawk}/bin/awk '{print $1}' | sort > "$CURR_FILE"
+                  | ${pkgs.gawk}/bin/awk '{print $1}' | sort > "$ALL_FILE"
+                printf '%s\n' ${lib.escapeShellArgs excludedUnits} | sort > "$EXCL_FILE"
+                ${pkgs.coreutils}/bin/comm -23 "$ALL_FILE" "$EXCL_FILE" > "$CURR_FILE"
                 touch "$STATE_FILE"
 
                 NEW=$(${pkgs.coreutils}/bin/comm -13 "$STATE_FILE" "$CURR_FILE")
@@ -119,12 +254,15 @@ $RESOLVED"
                 fi
 
                 mv "$CURR_FILE" "$STATE_FILE"
+                rm -f "$ALL_FILE" "$EXCL_FILE"
               '';
             };
           };
           systemd.timers.failed-units-monitor = {
             wantedBy = [ "timers.target" ];
-            timerConfig = { OnCalendar = "*:0/5"; Persistent = true; };
+            # No Persistent: a 5-minute cadence has nothing to catch up on,
+            # and it would only add a burst at every boot.
+            timerConfig = { OnCalendar = "*:0/5"; };
           };
 
           # ──── Boot notification: know immediately that a boot happened ────
@@ -133,10 +271,17 @@ $RESOLVED"
             wantedBy = [ "multi-user.target" ];
             after = [ "network-online.target" ];
             wants = [ "network-online.target" ];
+            # A completed oneshot reads as inactive, and switch-to-configuration
+            # starts every inactive wantedBy unit it finds — so RemainAfterExit
+            # is what stops a rebuild from re-announcing the last real boot,
+            # and the *IfChanged pair stops an edit to this script doing the same.
+            restartIfChanged = false;
+            stopIfChanged = false;
             serviceConfig = {
               Type = "oneshot";
+              RemainAfterExit = true;
               ExecStart = pkgs.writeShellScript "boot-notify" ''
-                ${notifyLib}
+                ${shellLib}
                 BOOTED=$(${pkgs.procps}/bin/uptime -s)
                 FAILED=$(${pkgs.systemd}/bin/systemctl --failed --no-legend --plain \
                   | ${pkgs.gawk}/bin/awk '{print $1}')
@@ -146,6 +291,12 @@ $RESOLVED"
 ⚠️ Failed units at boot:
 $FAILED"
                 fi
+
+                # Pre-reboot state would otherwise read as a mass recovery on
+                # the next poll, since nothing has had a chance to fail yet.
+                rm -f /var/lib/failed-units-monitor/failed
+                rm -f /var/lib/service-monitor/*
+
                 # Network may still be settling right after boot; retry
                 for i in 1 2 3 4 5 6; do
                   if notify "$MSG"; then exit 0; fi
@@ -160,14 +311,27 @@ $FAILED"
             description = "Discord failure notification for %i";
             serviceConfig = {
               Type = "oneshot";
+              StateDirectory = "service-monitor";
               ExecStart = pkgs.writeShellScript "notify-failure" ''
-                ${notifyLib}
+                ${shellLib}
                 UNIT="$1"
                 SERVICE="''${UNIT%.service}"
-                notify "🚨 **Service DOWN on $HOST**: $SERVICE failed (instant alert)."
+                STATE_DIR=/var/lib/service-monitor
+
                 # Pre-mark state so the polling monitor doesn't duplicate the alert
-                mkdir -p /var/lib/service-monitor
-                echo "down" > "/var/lib/service-monitor/$SERVICE"
+                echo "down" > "$STATE_DIR/$SERVICE"
+
+                # A unit with Restart=on-failure in a crash loop would otherwise
+                # emit one webhook per restart and trip Discord's rate limit,
+                # which --fail turns into a failed unit of our own.
+                CD="$STATE_DIR/lastalert-$SERVICE"
+                NOW=$(${pkgs.coreutils}/bin/date +%s)
+                LAST=$(cat "$CD" 2>/dev/null || echo 0)
+                is_num "$LAST" || LAST=0
+                [ $(( NOW - LAST )) -lt 600 ] && exit 0
+                echo "$NOW" > "$CD"
+
+                notify "🚨 **Service DOWN on $HOST**: $SERVICE failed (instant alert)."
               '' + " %i";
             };
           };
@@ -177,11 +341,12 @@ $FAILED"
           # by the modules that own each service (seedbox, arr, jellyfin, …).
           systemd.services.service-monitor = {
             description = "Monitor critical services and alert on state transitions";
+            after = [ "boot-notify.service" ];
             serviceConfig = {
               Type = "oneshot";
               StateDirectory = "service-monitor";
               ExecStart = pkgs.writeShellScript "service-monitor" ''
-                ${notifyLib}
+                ${shellLib}
                 STATE_DIR=/var/lib/service-monitor
 
                 check_service() {
@@ -206,141 +371,28 @@ $FAILED"
           };
           systemd.timers.service-monitor = {
             wantedBy = [ "timers.target" ];
-            timerConfig = { OnCalendar = "*:0/15"; Persistent = true; };
+            timerConfig = { OnCalendar = "*:0/15"; };
           };
         }
 
-        # ──── Disk SMART health: only on hosts that registered disks/NVMe ────
-        (lib.mkIf (disks != [ ] || nvmes != [ ]) {
-          systemd.services.disk-monitor = {
-            description = "Disk health monitor with Discord alerts";
+        # ──── Freshness deadman: only on hosts that registered jobs/paths ────
+        (lib.mkIf (jobs != [ ] || paths != [ ]) {
+          systemd.services.freshness-monitor = {
+            description = "Alert on jobs and data trees that stopped happening";
             serviceConfig = {
               Type = "oneshot";
-              StateDirectory = "disk-monitor";
-              ExecStart = pkgs.writeShellScript "disk-monitor" ''
-                ${notifyLib}
-                STATE_DIR=/var/lib/disk-monitor
+              StateDirectory = "freshness-monitor";
+              ExecStart = pkgs.writeShellScript "freshness-monitor" ''
+                ${shellLib}
+                STATE_DIR=/var/lib/freshness-monitor
+                NOW=$(${pkgs.coreutils}/bin/date +%s)
 
-                check_disk() {
-                  DISK=$1
-                  SAFE=$(echo "$DISK" | tr '/' '_')
+                check_job() {
+                  UNIT=$1; MAX=$2
+                  SF="$STATE_DIR/job_$UNIT"
+                  LAST=$(${pkgs.systemd}/bin/systemctl show -p InactiveExitTimestamp \
+                    --value "$UNIT.service" 2>/dev/null)
 
-                  # SMART overall health: transitions
-                  HF="$STATE_DIR/health$SAFE"
-                  PREV=$(cat "$HF" 2>/dev/null || echo "PASSED")
-                  if ${pkgs.smartmontools}/bin/smartctl -H "$DISK" 2>&1 | grep -qi "FAILED"; then
-                    CURR="FAILED"; else CURR="PASSED"; fi
-                  if [ "$CURR" = "FAILED" ] && [ "$PREV" = "PASSED" ]; then
-                    notify "🚨 **DISK FAILURE on $HOST**: $DISK has FAILED its SMART health check! Immediate action required."
-                  elif [ "$CURR" = "PASSED" ] && [ "$PREV" = "FAILED" ]; then
-                    notify "✅ **Disk recovered on $HOST**: $DISK passes SMART again. (Stay suspicious — investigate the earlier failure.)"
-                  fi
-                  echo "$CURR" > "$HF"
-
-                  # Reallocated sectors: alert only on increase
-                  RF="$STATE_DIR/realloc$SAFE"
-                  PREV_R=$(cat "$RF" 2>/dev/null || echo "0")
-                  R=$(${pkgs.smartmontools}/bin/smartctl -A "$DISK" 2>&1 \
-                    | grep "Reallocated_Sector" | ${pkgs.gawk}/bin/awk '{print $10}')
-                  R=''${R:-0}
-                  if [ "$R" -gt "$PREV_R" ]; then
-                    notify "⚠️ **Disk Warning on $HOST**: $DISK reallocated sectors increased: $PREV_R → $R."
-                  fi
-                  echo "$R" > "$RF"
-                }
-
-                check_nvme() {
-                  DISK=$1
-                  SAFE=$(echo "$DISK" | tr '/' '_')
-                  A=$(${pkgs.smartmontools}/bin/smartctl -A "$DISK" 2>&1)
-
-                  # Overall health: transitions
-                  HF="$STATE_DIR/health$SAFE"
-                  PREV=$(cat "$HF" 2>/dev/null || echo "PASSED")
-                  if ${pkgs.smartmontools}/bin/smartctl -H "$DISK" 2>&1 | grep -qiE "FAILED"; then
-                    CURR="FAILED"; else CURR="PASSED"; fi
-                  if [ "$CURR" = "FAILED" ] && [ "$PREV" = "PASSED" ]; then
-                    notify "🚨 **NVMe FAILURE on $HOST**: $DISK failed its SMART health check!"
-                  elif [ "$CURR" = "PASSED" ] && [ "$PREV" = "FAILED" ]; then
-                    notify "✅ **NVMe recovered on $HOST**: $DISK passes SMART again."
-                  fi
-                  echo "$CURR" > "$HF"
-
-                  # Media errors: alert only on increase
-                  MF="$STATE_DIR/mediaerr$SAFE"
-                  PREV_M=$(cat "$MF" 2>/dev/null || echo "0")
-                  M=$(echo "$A" | grep -i "Media and Data Integrity Errors" | ${pkgs.gawk}/bin/awk '{print $NF}')
-                  M=''${M:-0}
-                  if [ "$M" -gt "$PREV_M" ]; then
-                    notify "⚠️ **NVMe Warning on $HOST**: $DISK media errors increased: $PREV_M → $M."
-                  fi
-                  echo "$M" > "$MF"
-
-                  # Wear level: one-time alert crossing 90% used
-                  WF="$STATE_DIR/wear$SAFE"
-                  PREV_W=$(cat "$WF" 2>/dev/null || echo "ok")
-                  PCT=$(echo "$A" | grep -i "Percentage Used" | ${pkgs.gawk}/bin/awk '{print $NF}' | tr -d '%')
-                  PCT=''${PCT:-0}
-                  if [ "$PCT" -gt "90" ] && [ "$PREV_W" = "ok" ]; then
-                    notify "⚠️ **NVMe Wear on $HOST**: $DISK is at $PCT% of rated write endurance. Plan a replacement."
-                    echo "alerted" > "$WF"
-                  fi
-                }
-
-                ${diskCalls}${nvmeCalls}
-              '';
-            };
-          };
-          systemd.timers.disk-monitor = {
-            wantedBy = [ "timers.target" ];
-            timerConfig = { OnCalendar = "daily"; Persistent = true; };
-          };
-        })
-
-        # ──── Filesystem space: only on hosts that registered filesystems ────
-        (lib.mkIf (fses != [ ]) {
-          systemd.services.disk-space-monitor = {
-            description = "Filesystem space monitor with Discord alerts";
-            serviceConfig = {
-              Type = "oneshot";
-              StateDirectory = "disk-space-monitor";
-              ExecStart = pkgs.writeShellScript "disk-space-monitor" ''
-                ${notifyLib}
-                STATE_DIR=/var/lib/disk-space-monitor
-
-                check_fs() {
-                  MOUNT=$1; HIGH=$2; LOW=$3
-                  SAFE=$(echo "$MOUNT" | tr '/' '_')
-                  SF="$STATE_DIR/space$SAFE"
-                  USAGE=$(${pkgs.coreutils}/bin/df "$MOUNT" | ${pkgs.gawk}/bin/awk 'NR==2 {print $5}' | tr -d '%')
-                  PREV=$(cat "$SF" 2>/dev/null || echo "ok")
-
-                  if [ "$USAGE" -gt "$HIGH" ] && [ "$PREV" = "ok" ]; then
-                    notify "⚠️ **Disk space on $HOST**: $MOUNT is at $USAGE% capacity."
-                    echo "alerted" > "$SF"
-                  elif [ "$USAGE" -lt "$LOW" ] && [ "$PREV" = "alerted" ]; then
-                    notify "✅ **Disk space OK on $HOST**: $MOUNT is back down to $USAGE%."
-                    echo "ok" > "$SF"
-                  fi
-                }
-
-                ${fsCalls}
-              '';
-            };
-          };
-          systemd.timers.disk-space-monitor = {
-            wantedBy = [ "timers.target" ];
-            timerConfig = { OnCalendar = "hourly"; Persistent = true; };
-          };
-        })
-
-        # OnFailure attachments for instant crash alerts, merged as a
-        # separate fragment so the wholesale `systemd.services` assignment
-        # doesn't collide with the named definitions above.
-        {
-          systemd.services = lib.genAttrs watched
-            (name: { unitConfig.OnFailure = [ "notify-failure@%n.service" ]; });
-        }
-      ];
-    };
-}
+                  if [ -z "$LAST" ]; then
+                    transition "$SF" "never" \
+                      "🚨 **Never ran on $HOST**: $UNIT has no recorded run —
