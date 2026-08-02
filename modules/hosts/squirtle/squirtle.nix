@@ -62,33 +62,74 @@
       };
     };
 
-    # ──── Monitoring inventory: what this host watches ────
-    # Service registrations come from the role modules (arr, seedbox, …);
-    # disks and filesystems are host hardware, so they live here.
-    # Drives are watched by-id (serial-derived): immune to the sdX
-    # enumeration shuffle that five drives on two controllers guarantee.
-    dendriticNixOS.monitoring = {
-          discordUsername = "Squirtle";
-          watchedDisks = [
-            "/dev/disk/by-id/ata-ST4000VN006-3CW104_ZW63HHNT"        # disk2 (IronWolf, data)
-            "/dev/disk/by-id/ata-ST4000DM004-2CV104_WFN41F62"        # disk3 (Barracuda, data)
-            "/dev/disk/by-id/ata-ST4000VN006-3CW104_ZW63JHDE"        # parity (IronWolf)
-            "/dev/disk/by-id/ata-Samsung_SSD_860_EVO_2TB_S3YVNX0N700137K"  # scratch
-          ];
-          watchedNvme = [ "/dev/nvme0n1" ];
-          # Scratch alerts earlier than the rest: it fills by design and pruning
-          # is manual, so the warning has to arrive with a UHD pack's worth of
-          # room still left rather than at the usual 10%.
-          watchedFilesystems = [
-            { mount = "/";            high = 85; low = 75; }
-            { mount = "/mnt/cache";   high = 90; low = 85; }
-            { mount = "/mnt/disk2";   high = 90; low = 85; }
-            { mount = "/mnt/disk3";   high = 90; low = 85; }
-            { mount = "/mnt/parity";  high = 95; low = 90; }
-            { mount = "/mnt/scratch"; high = 80; low = 70; }
-            { mount = "/mnt/storage"; high = 90; low = 85; }
-          ];
-        };
+      # ──── Monitoring inventory ────
+      dendriticNixOS.monitoring = {
+        watchedServices = [
+          # existing long-running roster, unchanged
+        ];
+
+        # Oneshots: OnFailure-hooked and deadmanned, never polled — a completed
+        # oneshot reads as inactive, so polling would alert DOWN forever.
+        # maxHours sits just past one scheduling interval, so a single skipped
+        # run is the signal rather than a sustained outage.
+        watchedJobs = [
+          { unit = "backup";               maxHours = 30; }   # nightly 23:00
+          { unit = "snapraid-sync";        maxHours = 30; }   # nightly 00:00
+          { unit = "backup-prune";         maxHours = 200; }  # Sun 22:00
+          { unit = "disk-monitor";         maxHours = 30; }   # daily 09:00
+          { unit = "disk-space-monitor";   maxHours = 3; }    # hourly
+          { unit = "failed-units-monitor"; maxHours = 1; }    # */5 — was found
+                                                            # sitting failed by hand
+        ];
+
+        # Service liveness is not evidence that data is arriving: the zubat
+        # folder-ID mismatch kept syncthing active and the sink at 4K for weeks.
+        # Only newest-mtime can see that class of failure.
+        watchedPaths = [
+          { path = "/mnt/cache/phone-backup";       maxHours = 96; }  # Seedvault runs on idle+charge
+          { path = "/mnt/cache/syncthing/obsidian"; maxHours = 336; } # two weeks of no notes is plausible
+          { path = "/mnt/storage/backups";          maxHours = 30; }  # restic writes nightly
+        ];
+
+        # Serial-suffixed by-id throughout: parity and disk2 are the same
+        # IronWolf model, so anything less specific can swap them after a
+        # controller renumber and silently monitor the wrong drive.
+        watchedDisks = [
+          "/dev/disk/by-id/ata-ST4000VN006-3CW104_ZW63JHDE"              # parity  (IronWolf)
+          "/dev/disk/by-id/ata-ST4000VN006-3CW104_ZW63HHNT"              # disk2   (IronWolf)
+          "/dev/disk/by-id/ata-ST4000DM004-2CV104_WFN41F62"              # disk3   (Barracuda)
+          "/dev/disk/by-id/ata-Samsung_SSD_860_EVO_2TB_S3YVNX0N700137K"  # scratch (860 EVO)
+        ];
+
+        # Kernel name, not by-id: udev emits a duplicate by-id for this drive
+        # (…_50026B7283698D7A and …_1) and which one carries the suffix is not
+        # stable across boots. Only one NVMe is present, so nvme0n1 cannot be
+        # ambiguous.
+        watchedNvme = [ "/dev/nvme0n1" ];
+
+        watchedFilesystems = [
+          # 128G post-resize; one system closure is ~8G, so 15% free is roughly
+          # two rebuilds of runway.
+          { mount = "/";            high = 85; low = 75; }
+          # 95G post-resize, and a ~5GB non-dedupable Seedvault set can move this
+          # several points between hourly checks — the old 90/85 left only ~9G.
+          { mount = "/mnt/cache";   high = 75; low = 65; }
+          # Earlier than the rest: pruning finished seeds here is manual.
+          { mount = "/mnt/scratch"; high = 80; low = 70; }
+          # mergerfs pool — watched alongside its branches, since a dropped branch
+          # shrinks the pool rather than failing it.
+          { mount = "/mnt/storage"; high = 85; low = 75; }
+          { mount = "/mnt/disk2";   high = 90; low = 80; }
+          { mount = "/mnt/disk3";   high = 90; low = 80; }
+          # Parity must always have room to grow with the largest data disk.
+          { mount = "/mnt/parity";  high = 90; low = 80; }
+        ];
+
+        # The Era-case drives run on cables with no airflow gaps; the Barracuda
+        # already reached 47°C under evacuation load.
+        tempHigh = 50;
+        tempLow  = 45;
+      };
 
     sops.secrets.tailscale_authkey = { };
     dendriticNixOS.tailscale.authKeyFile = config.sops.secrets.tailscale_authkey.path;
