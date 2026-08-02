@@ -70,13 +70,16 @@
       # ──── Nightly local backup to HDD array ────
       systemd.services.backup = {
         description = "Restic backup to local HDD array";
+        # WHY unitConfig: RequiresMountsFor is a [Unit] key. Placed in
+        # serviceConfig it parses, is discarded with a warning only visible at
+        # activation, and the protection silently does not exist.
+        # WHY at all: /mnt/storage is mergerfs and /mnt/cache a separate NVMe
+        # partition — without this the unit can start against an unmounted pool
+        # and fail fast in a way indistinguishable from a repo fault.
+        unitConfig.RequiresMountsFor = [ "/mnt/storage" "/mnt/cache" ];
         serviceConfig = {
           Type = "oneshot";
           CacheDirectory = "restic";
-          # WHY: /mnt/storage is mergerfs and /mnt/cache is a separate NVMe
-          # partition — without this the unit can start against an unmounted
-          # pool and fail fast in a way that looks identical to a repo fault.
-          RequiresMountsFor = [ "/mnt/storage" "/mnt/cache" ];
           ExecStart = mkResticJob {
             name = "backup";
             cache = "restic";
@@ -106,10 +109,10 @@
       # rewrites pack files and is the heaviest thing that touches the array.
       systemd.services.backup-prune = {
         description = "Restic retention prune on local HDD array";
+        unitConfig.RequiresMountsFor = [ "/mnt/storage" ];
         serviceConfig = {
           Type = "oneshot";
           CacheDirectory = "restic";
-          RequiresMountsFor = [ "/mnt/storage" ];
           ExecStart = mkResticJob {
             name = "backup-prune";
             cache = "restic";
@@ -148,10 +151,10 @@
       # offsite target is chosen; it will fail loudly until then.
       systemd.services.backup-charizard = {
         description = "Restic backup to charizard";
+        unitConfig.RequiresMountsFor = [ "/mnt/cache" ];
         serviceConfig = {
           Type = "oneshot";
           CacheDirectory = "restic-charizard";
-          RequiresMountsFor = [ "/mnt/cache" ];
           ExecStart = mkResticJob {
             name = "backup-charizard";
             cache = "restic-charizard";
