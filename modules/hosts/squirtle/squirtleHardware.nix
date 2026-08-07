@@ -26,28 +26,6 @@
     swapDevices = [ ];
     nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
     hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
-
-    # ──── Clevis readiness gate ──────────────────────────────────────────────
-    # WHY: nixpkgs generates cryptsetup-clevis-<dev> as Type=oneshot with a
-    # single `clevis decrypt` and no retry; useTang only orders it after
-    # network-online.target, which carrier + a static address satisfy well
-    # before the switch port forwards. Since the Flex Mini joined the domain,
-    # RSTP reconvergence puts that window inside the ~3s the one attempt has —
-    # measured 1 failure in 4 boots (2026-08-07). Wait for tang to actually
-    # answer, then let the real attempt run.
-    boot.initrd.systemd.extraBin.sleep = "${pkgs.coreutils}/bin/sleep";
-    boot.initrd.systemd.services."cryptsetup-clevis-luks-bb59877a-e6fb-443d-af1e-485147ca43f2".preStart = ''
-      tries=0
-      until curl -sf -o /dev/null --max-time 2 http://192.168.1.16:7654/adv; do
-        tries=$((tries + 1))
-        if [ "$tries" -ge 20 ]; then
-          echo "tang unanswered after $tries attempts, falling through to passphrase"
-          break
-        fi
-        echo "tang not reachable yet (attempt $tries), waiting for the port to forward"
-        sleep 1
-      done
-    '';
   };
 
 }
