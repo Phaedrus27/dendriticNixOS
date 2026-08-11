@@ -10,6 +10,7 @@
       vesktop
       vlc
       obsidian
+      spotify
     ];
   };
 }
