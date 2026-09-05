@@ -2,7 +2,7 @@
   flake.nixosModules.gaming = { pkgs, lib, config, ... }:
   let
     # MangoHud + vkBasalt configs live in the Nix store and are selected via the
-    # env vars further down — fully declarative, no ~/.config state to babysit.
+    # env vars further down.
     mangoHudConf = pkgs.writeText "MangoHud.conf" ''
       # MANGOHUD=1 (sessionVariables) loads the layer into every Vulkan app;
       # no_display keeps it hidden until toggled. Keybinds are read by MangoHud
@@ -29,14 +29,6 @@
       background_alpha=0.4
     '';
 
-    vkBasaltConf = pkgs.writeText "vkBasalt.conf" ''
-      # Opt in per game with ENABLE_VKBASALT=1 %command%. Chain more with a
-      # colon, e.g. effects = fxaa:cas. Home toggles in-game (XWayland only).
-      effects = cas
-      casSharpness = 0.4
-      toggleKey = Home
-      enableOnLaunch = True
-    '';
   in {
 
     # ──── Steam & Proton ────
@@ -76,7 +68,6 @@
     environment.sessionVariables = {
       MANGOHUD = "1";
       MANGOHUD_CONFIGFILE = "${mangoHudConf}";
-      VKBASALT_CONFIG_FILE = "${vkBasaltConf}";
     };
 
     # ──── Hardware ────
@@ -92,7 +83,6 @@
       mangohud
 
       # Vulkan
-      vkbasalt            # post-processing layer (sharpening, AA)
       vulkan-tools        # vkcube: minimal known-good overlay canary
 
       # Monitoring & profiling
