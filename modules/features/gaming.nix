@@ -44,20 +44,9 @@
     programs.gamemode = {
       enable = true;
       settings.general.renice = 10;
-      # No gpu block: a gamemode performance level and a LACT profile both write
-      # power_dpm_force_performance_level, and whichever applied last silently
-      # wins. GPU clocks are LACT's alone.
     };
 
     # ──── GPU tuning ────
-    # LACT over corectrl: corectrl only enforces its saved profile while the GUI
-    # runs, which is why it needed a spawn-at-startup entry. lactd applies at
-    # boot, independent of the session — so a Sunshine wake or a gamescope
-    # session gets the same clocks as a seated niri login.
-    #
-    # ppfeaturemask stated explicitly, not left to the option default:
-    # 0xfffd7fff is the conservative mask (upstream associates the two extra
-    # bits in 0xffffffff with flicker) and DP-1 is flicker-sensitive.
     services.lact.enable = true;
     hardware.amdgpu.overdrive = {
       enable = true;
