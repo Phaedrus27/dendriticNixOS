@@ -51,61 +51,26 @@
     programs.gamescope.enable = true;
     programs.gamemode = {
       enable = true;
-      settings = {
-        general = {
-          renice = 10;
-        };
-        gpu = {
-          apply_gpu_optimisations = "accept-responsibility";
-          gpu_device = 0;
-          amd_performance_level = "high";
-        };
-      };
+      settings.general.renice = 10;
+      # No gpu block: a gamemode performance level and a LACT profile both write
+      # power_dpm_force_performance_level, and whichever applied last silently
+      # wins. GPU clocks are LACT's alone.
     };
 
     # ──── GPU tuning ────
-    # programs.corectrl.enable handles the package, dbus, the corectrl group and
-    # the no-password polkit rule. (corectrl only enforces profiles while
-    # running — see the spawn-at-startup line in charizardNiri to apply them at
-    # login.)
+    # LACT over corectrl: corectrl only enforces its saved profile while the GUI
+    # runs, which is why it needed a spawn-at-startup entry. lactd applies at
+    # boot, independent of the session — so a Sunshine wake or a gamescope
+    # session gets the same clocks as a seated niri login.
     #
-    # ppfeaturemask is stated explicitly rather than left to the option default:
+    # ppfeaturemask stated explicitly, not left to the option default:
     # 0xfffd7fff is the conservative mask (upstream associates the two extra
-    # bits in 0xffffffff with flicker), and DP-1 is flicker-sensitive. It was
-    # previously ALSO set in charizardHardware.nix, so which value won depended
-    # on kernelParams list order — an import reorder could have flipped it
-    # silently. The overdrive bit is set either way, so GPU clock control is
-    # unaffected by the choice.
-    programs.corectrl.enable = true;
+    # bits in 0xffffffff with flicker) and DP-1 is flicker-sensitive.
+    services.lact.enable = true;
     hardware.amdgpu.overdrive = {
       enable = true;
       ppfeaturemask = "0xfffd7fff";
     };
-
-    # ──── Game streaming (Sunshine host) ────
-    services.sunshine = {
-      enable = true;
-      autoStart = true;
-      capSysAdmin = true;       # required for KMS capture under Wayland/niri
-      openFirewall = true;
-      settings.sunshine_name = "charizard";
-      applications.apps = [
-        {
-          name = "Steam Big Picture";
-          # capSysAdmin runs these as root; drop back to phaedrus to reach the
-          # real Wayland session and the user's Steam.
-          detached = [ "setsid sudo -u phaedrus steam steam://open/bigpicture" ];
-          "prep-cmd" = [
-            { do = ""; undo = "sudo -u phaedrus setsid steam steam://close/bigpicture"; }
-          ];
-          "image-path" = "steam.png";
-        }
-      ];
-    };
-
-    # Virtual input for Moonlight clients (group + udev perms + module). Without
-    # group membership you get video but no remote keyboard/mouse.
-    hardware.uinput.enable = true;
 
     # ──── Overlay & post-processing config selection ────
     environment.sessionVariables = {
@@ -117,16 +82,14 @@
     # ──── Hardware ────
     hardware.steam-hardware.enable = true;
     services.udev.packages = [ pkgs.game-devices-udev-rules ];
-    users.users.phaedrus.extraGroups = [ "corectrl" "uinput" ];
 
     # ──── Packages ────
     environment.systemPackages = with pkgs; [
       # Launchers
       heroic              # GOG & Epic
 
-      # MangoHud & overlay
+      # MangoHud
       mangohud
-      goverlay            # MangoHud GUI config
 
       # Vulkan
       vkbasalt            # post-processing layer (sharpening, AA)
