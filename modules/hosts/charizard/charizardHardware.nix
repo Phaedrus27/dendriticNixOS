@@ -10,7 +10,6 @@
 
     boot.kernelParams = [
       "amd_pstate=active"                  # EPP-based freq scaling (Zen 5)
-      "amdgpu.ppfeaturemask=0xffffffff"    # unlock GPU OC/UV controls
     ];
 
     boot.initrd.systemd.enable = true;
