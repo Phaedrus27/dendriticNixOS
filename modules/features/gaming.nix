@@ -40,10 +40,12 @@
     };
 
     # ──── Gamescope & Gamemode ────
-    programs.gamescope.enable = true;
-    programs.gamemode = {
+    # gamescope enumerates connectors itself and has no view of niri's output
+    # layout, so it lands on HDMI-A-1 unprompted. DP-1 is the HDR panel; the
+    # fallback keeps the session reachable if DP-1 is asleep or unplugged.
+    programs.gamescope = {
       enable = true;
-      settings.general.renice = 10;
+      args = [ "--prefer-output" "DP-1,HDMI-A-1" ];
     };
 
     # ──── GPU tuning ────

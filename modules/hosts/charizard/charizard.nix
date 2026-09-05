@@ -54,7 +54,7 @@
         user = "phaedrus";
       };
       default_session = lib.mkForce {
-        command = "${lib.getExe pkgs.tuigreet} --remember";
+        command = "${lib.getExe pkgs.tuigreet} --remember --sessions ${config.services.displayManager.sessionData.desktops}/share/wayland-sessions";
         user = "greeter";
       };
     };
