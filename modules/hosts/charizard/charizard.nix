@@ -1,9 +1,9 @@
-{ self, inputs, config, ... }: {
+{ self, inputs, ... }: {
   flake.nixosConfigurations.charizard = inputs.nixpkgs.lib.nixosSystem {
     modules = [ self.nixosModules.charizardConfiguration ];
   };
 
-  flake.nixosModules.charizardConfiguration = { pkgs, lib, ... }: {
+  flake.nixosModules.charizardConfiguration = { pkgs, lib, config, ... }: {
     imports = [
       self.nixosModules.charizardHardware
       self.nixosModules.workstation
@@ -49,12 +49,12 @@
     # service, which yubikey.nix opts out of u2f — so this depends on the
     # account password being set.
     services.greetd.settings = {
-      initial_session = lib.mkForce {
+      initial_session = {
         command = "niri-session";
         user = "phaedrus";
       };
       default_session = lib.mkForce {
-        command = "${lib.getExe pkgs.greetd.tuigreet} --remember --sessions ${config.services.displayManager.sessionData.desktops}/share/wayland-sessions";
+        command = "${lib.getExe pkgs.tuigreet} --remember";
         user = "greeter";
       };
     };
