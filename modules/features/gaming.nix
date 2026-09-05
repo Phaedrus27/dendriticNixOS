@@ -42,7 +42,7 @@
     # ──── Gamescope & Gamemode ────
     # gamescope enumerates connectors itself and has no view of niri's output
     # layout, so it lands on HDMI-A-1 unprompted. DP-1 is the HDR panel; the
-    # fallback keeps the session reachable if DP-1 is asleep or unplugged.
+    # fallback keeps the session reachable if DP-1 is asleep.
     programs.gamescope = {
       enable = true;
       args = [ "--prefer-output" "DP-1,HDMI-A-1" ];
@@ -70,11 +70,16 @@
       # Launchers
       heroic              # GOG & Epic
 
-      # MangoHud
+      # Overlay
       mangohud
-
-      # Vulkan
       vulkan-tools        # vkcube: minimal known-good overlay canary
+
+      # HDR
+      # gamescope's --hdr-enabled switches the connector to PQ, but Vulkan
+      # clients query the swapchain, not the connector — without this layer they
+      # see an SDR surface and report the display as HDR-incapable even while
+      # the panel is in HDR mode.
+      gamescope-wsi
 
       # Monitoring & profiling
       lm_sensors
