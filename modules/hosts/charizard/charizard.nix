@@ -16,6 +16,7 @@
       self.nixosModules.charizardNiri
       self.nixosModules.base
       self.nixosModules.editingApps
+      self.nixosModules.streaming
     ];
 
     boot.loader.systemd-boot.enable = true;
