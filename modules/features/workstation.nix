@@ -93,5 +93,13 @@
       proton-vpn                         # moved from environment.nix
       tailscale-systray                  # moved from environment.nix
     ];
+
+    # ──── mimeapps.list ────
+    # ~/.config/mimeapps.list outranks /etc/xdg/mimeapps.list, so any "open with →
+    # always" click silently overrides the flake. Point it at the generated system
+    # file so the user copy can't diverge from it.
+    systemd.user.tmpfiles.users.phaedrus.rules = [
+      "L+ %h/.config/mimeapps.list - - - - /etc/xdg/mimeapps.list"
+    ];
   };
 }
