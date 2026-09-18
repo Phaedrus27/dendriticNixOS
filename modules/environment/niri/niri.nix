@@ -115,9 +115,16 @@
         window-rules = [
           # Rounded + clipped corners with a drop shadow on every window.
           {
-            geometry-corner-radius = 20;
+            # Radius matches `gaps` so window curvature and window spacing stay a single
+            # number; spread 0 keeps the shadow a gradient rather than a hard ring.
+            geometry-corner-radius = 16;
             clip-to-geometry = true;
-            shadow.on = {};
+            shadow = {
+              on = {};
+              spread = 0;
+              softness = 25;
+              color = "#00000050";
+            };
           }
           # Steam: float its child/popup windows, keep the main client tiled.
           {
