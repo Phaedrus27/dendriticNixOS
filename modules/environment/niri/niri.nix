@@ -129,8 +129,8 @@
               softness = 30;
               spread = 2;
               offset = _: { props = { x = 0; y = 4; }; };
-              color = "#000000b0";
-              inactive-color = "#00000038";
+              color = "#000000d8";
+              inactive-color = "#00000028";
             };
           }
           # Steam: float its child/popup windows, keep the main client tiled.
