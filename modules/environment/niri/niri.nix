@@ -131,6 +131,14 @@
             default-floating-position = _: { props = { x = 10; y = 10; relative-to = "bottom-right"; }; };
             open-focused = false;
           }
+
+          # Steam is X11 and paints its own square 1px frame as part of its titlebar.
+          # Rounding the geometry clips that frame's corners off mid-run, so keep
+          # Steam's corners square and let the frame close properly.
+          {
+            matches = [ { app-id = "^steam$"; } ];
+            geometry-corner-radius = 0;
+          }
         ];
 
         # ────────────────────────────  Appearance  ────────────────────────────
