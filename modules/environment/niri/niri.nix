@@ -115,15 +115,22 @@
         window-rules = [
           # Rounded + clipped corners with a drop shadow on every window.
           {
-            # Radius matches `gaps` so window curvature and window spacing stay a single
-            # number; spread 0 keeps the shadow a gradient rather than a hard ring.
-            geometry-corner-radius = 16;
+            # Small radius: clip-to-geometry cuts into client pixels, so the radius is
+            # bounded by the inset of titlebar controls in the tightest-spaced app.
+            # A short arc also gives the eye little curvature to read, which keeps the
+            # circular-arc-to-straight-edge transition from reading as a kink.
+            geometry-corner-radius = 12;
             clip-to-geometry = true;
+            # Spread lays a band of near-solid shadow along the edge, masking the
+            # curvature change at the corner. The active/inactive split is the only
+            # focus cue, since focus-ring and border are both off.
             shadow = {
               on = {};
-              spread = 0;
-              softness = 25;
-              color = "#00000050";
+              softness = 30;
+              spread = 2;
+              offset = _: { props = { x = 0; y = 4; }; };
+              color = "#000000b0";
+              inactive-color = "#00000038";
             };
           }
           # Steam: float its child/popup windows, keep the main client tiled.
