@@ -116,6 +116,9 @@
           # Square corners with a drop shadow on every window. The active/inactive
           # shadow split reinforces the focus border.
           {
+            # Clip client pixels to the window geometry so apps that paint their own
+            # 1px frame can't overdraw half of niri's 2px focus border.
+            clip-to-geometry = true;
             shadow = {
               on = {};
               softness = 30;
