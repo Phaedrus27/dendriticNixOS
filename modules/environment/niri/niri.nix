@@ -116,16 +116,16 @@
           # Square corners with a drop shadow on every window. The active/inactive
           # shadow split reinforces the focus border.
           {
-            # Clip client pixels to the window geometry so apps that paint their own
-            # 1px frame can't overdraw half of niri's 2px focus border.
             clip-to-geometry = true;
             shadow = {
               on = {};
-              softness = 30;
-              spread = 2;
-              offset = _: { props = { x = 0; y = 4; }; };
-              color = "#000000d8";
-              inactive-color = "#00000028";
+              # Tight blur with a pronounced drop: the window reads as lifted off the
+              # backdrop rather than sitting in a diffuse glow.
+              softness = 16;
+              spread = 0;
+              offset = _: { props = { x = 0; y = 10; }; };
+              color = "#000000cc";
+              inactive-color = "#00000030";
             };
           }
           # Steam: float its child/popup windows, keep the main client tiled.
@@ -171,7 +171,6 @@
           # steppers are gone.
           preset-column-widths = [
             { proportion = 0.33333; }
-            { proportion = 0.5; }
             { proportion = 0.66667; }
             { proportion = 1.0; }
           ];
@@ -306,6 +305,7 @@
           # the same pair moves windows between columns.
           "Mod+Minus".set-window-height = "-10%";
           "Mod+Plus".set-window-height = "+10%";
+          "Mod+M".maximize-column = {};
 
           # Modes
           "Mod+T".toggle-window-floating = {};
