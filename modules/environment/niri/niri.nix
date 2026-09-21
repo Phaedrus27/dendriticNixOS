@@ -164,11 +164,22 @@
           background-color = "transparent";   # let Noctalia's backdrop wallpaper show through
           focus-ring.off = {};
           gaps = 16;
+
+          # Widths that tile exactly: 1/3+2/3, 1/2+1/2, 3x1/3, or one full-width
+          # column. Proportions are gap-aware and compose without overflow at any
+          # gaps value; raw percentages aren't, which is why the percentage width
+          # steppers are gone.
           preset-column-widths = [
             { proportion = 0.33333; }
             { proportion = 0.5; }
             { proportion = 0.66667; }
+            { proportion = 1.0; }
           ];
+
+          # Stated rather than left implicit: the lattice above is built around new
+          # windows opening at half width.
+          default-column-width = { proportion = 0.5; };
+
           struts = {};
 
           tab-indicator = {
@@ -287,12 +298,14 @@
           "Mod+Ctrl+F".expand-column-to-available-width = {};
           "Mod+C".center-column = {};
           "Mod+Ctrl+C".center-visible-columns = {};
-          "Mod+apostrophe".set-column-width = "-10%";       # width down  (')
-          "Mod+dead_circumflex".set-column-width = "+10%";  # width up    (^ dead key)
-          "Mod+slash".set-window-height = "-10%";
-          "Mod+asterisk".set-window-height = "+10%";
-          "Mod+R".switch-preset-column-width = {};
-          "Mod+Shift+R".switch-preset-column-width-back = {};   # reverse-cycle the presets
+          # Cycle the gap-exact presets; asterisk widens and slash narrows, keeping the
+          # +/- sense these keys carried as step controls.
+          "Mod+asterisk".switch-preset-column-width = {};
+          "Mod+slash".switch-preset-column-width-back = {};
+          # Height has no preset lattice, so stepping is the only control here. Ctrl on
+          # the same pair moves windows between columns.
+          "Mod+Minus".set-window-height = "-10%";
+          "Mod+Plus".set-window-height = "+10%";
 
           # Modes
           "Mod+T".toggle-window-floating = {};
