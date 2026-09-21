@@ -113,17 +113,9 @@
 
         # ────────────────────────────  Window rules  ────────────────────────────
         window-rules = [
-          # Rounded + clipped corners with a drop shadow on every window.
+          # Square corners with a drop shadow on every window. The active/inactive
+          # shadow split reinforces the focus border.
           {
-            # Small radius: clip-to-geometry cuts into client pixels, so the radius is
-            # bounded by the inset of titlebar controls in the tightest-spaced app.
-            # A short arc also gives the eye little curvature to read, which keeps the
-            # circular-arc-to-straight-edge transition from reading as a kink.
-            geometry-corner-radius = 12;
-            clip-to-geometry = true;
-            # Spread lays a band of near-solid shadow along the edge, masking the
-            # curvature change at the corner. The active/inactive split is the only
-            # focus cue, since focus-ring and border are both off.
             shadow = {
               on = {};
               softness = 30;
@@ -144,14 +136,6 @@
             matches = [ { app-id = "steam"; title = "^notificationtoasts_\\d+_desktop$"; } ];
             default-floating-position = _: { props = { x = 10; y = 10; relative-to = "bottom-right"; }; };
             open-focused = false;
-          }
-
-          # Steam is X11 and paints its own square 1px frame as part of its titlebar.
-          # Rounding the geometry clips that frame's corners off mid-run, so keep
-          # Steam's corners square and let the frame close properly.
-          {
-            matches = [ { app-id = "^steam$"; } ];
-            geometry-corner-radius = 0;
           }
         ];
 
