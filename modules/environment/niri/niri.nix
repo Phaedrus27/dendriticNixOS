@@ -165,14 +165,13 @@
           focus-ring.off = {};
           gaps = 16;
 
-          # Widths that tile exactly: 1/3+2/3, 1/2+1/2, 3x1/3, or one full-width
-          # column. Proportions are gap-aware and compose without overflow at any
-          # gaps value; raw percentages aren't, which is why the percentage width
-          # steppers are gone.
+          # Proportions that combine to fill the screen exactly: 1/3+2/3, 1/2+1/2,
+          # 3x1/3. Full width comes from maximize-column instead, which keeps the
+          # cycle short enough to reverse in one tap.
           preset-column-widths = [
             { proportion = 0.33333; }
+            { proportion = 0.5; }
             { proportion = 0.66667; }
-            { proportion = 1.0; }
           ];
 
           # Stated rather than left implicit: the lattice above is built around new
